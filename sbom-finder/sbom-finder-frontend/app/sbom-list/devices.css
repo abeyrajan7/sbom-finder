@@ -1,0 +1,25 @@
+.devices-container {
+    width: 90%;
+    margin: auto;
+    text-align: center;
+  }
+  
+  h2 {
+    margin-bottom: 20px;
+  }
+  
+  .devices-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .devices-table th, .devices-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .devices-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
