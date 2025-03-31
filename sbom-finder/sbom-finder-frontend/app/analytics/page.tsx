@@ -119,7 +119,7 @@ export default function AnalyticsPage() {
           <button
             key={tab}
             className={selected === tab ? "active" : ""}
-            onClick={() => setSelected(tab)}
+            onClick={() => setSelected(tab as AnalyticsTab)}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
