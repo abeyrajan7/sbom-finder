@@ -3,7 +3,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-// import dashboardIcon from "@/public/assets/icons/dashboard.png";
 import "./SideNavBar.css";
 
 export default function SideNavBar() {
@@ -15,7 +14,6 @@ export default function SideNavBar() {
       <p className="nav-bar-line"></p>
       <ul className="nav-list">
         <li className="nav-item" onClick={() => router.push("/dashboard")}>
-          {/* <Image src={dashboardIcon} alt="Dashboard" className="nav-icon" /> */}
           <span>Dashboard</span>
         </li>
 
@@ -27,18 +25,20 @@ export default function SideNavBar() {
             router.push("/upload-sbom");
           }}
         >
-          {/* <Image src={dashboardIcon} alt="Upload SBOM" className="nav-icon" /> */}
           <span>Upload SBOM</span>
         </li>
 
         {/* SBOM List */}
         <li className="nav-item" onClick={() => router.push("/sbom-list")}>
-          {/* <Image src={dashboardIcon} alt="SBOM List" className="nav-icon" /> */}
           <span>SBOM List</span>
         </li>
 
         <li className="nav-item" onClick={() => router.push("/compare-sboms")}>
           <span>Compare SBOMs</span>
+        </li>
+
+        <li className="nav-item" onClick={() => router.push("/analytics")}>
+          <span>Analytics</span>
         </li>
       </ul>
     </div>

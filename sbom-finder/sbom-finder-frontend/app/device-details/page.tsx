@@ -52,9 +52,6 @@ export default function DeviceDetailsPage() {
       <section className="device-section">
         <div className="section-header">
           <h2>Device Information</h2>
-          {/* <button onClick={() => toggleSection("info")}>
-            {openSections.info ? "−" : "+"}
-          </button> */}
         </div>
         {openSections.info && (
           <>
