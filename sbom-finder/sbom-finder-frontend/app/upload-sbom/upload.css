@@ -1,10 +1,11 @@
 .upload-container {
+    margin-top: 5vh;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 90vh;
     background-color: #f5f7fa;
-  }
+}
   
   .upload-box {
     background-color: #ffffff;

@@ -2,6 +2,7 @@
     width: 90%;
     margin: auto;
     text-align: center;
+     max-height: 90vh;
   }
   
   h2 {
@@ -21,5 +22,13 @@
   .devices-table th {
     background-color: #f2f2f2;
     font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
-  
+
+  .table-scroll-wrapper {
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+  }

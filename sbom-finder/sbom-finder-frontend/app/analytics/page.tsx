@@ -78,29 +78,29 @@ const vulnerableSuppliers = [
   { name: "Fitbit", vulns: 10 },
 ];
 
-const vulnSeverityData = [
-  { name: "Critical", value: 14 },
-  { name: "High", value: 24 },
-  { name: "Medium", value: 30 },
-  { name: "Low", value: 18 },
-  { name: "Unknown", value: 6 },
-];
+// const vulnSeverityData = [
+//   { name: "Critical", value: 14 },
+//   { name: "High", value: 24 },
+//   { name: "Medium", value: 30 },
+//   { name: "Low", value: 18 },
+//   { name: "Unknown", value: 6 },
+// ];
 
-const severityColors: { [key: string]: string } = {
-  Critical: "#d32f2f",
-  High: "#f44336",
-  Medium: "#ff9800",
-  Low: "#ffeb3b",
-  Unknown: "#9e9e9e",
-};
+// const severityColors: { [key: string]: string } = {
+//   Critical: "#d32f2f",
+//   High: "#f44336",
+//   Medium: "#ff9800",
+//   Low: "#ffeb3b",
+//   Unknown: "#9e9e9e",
+// };
 
-const sections = [
-  "category",
-  "operatingSystem",
-  "supplier",
-  "manufacturer",
-  "vulnerabilities",
-];
+// const sections = [
+//   "category",
+//   "operatingSystem",
+//   "supplier",
+//   "manufacturer",
+//   "vulnerabilities",
+// ];
 
 export default function AnalyticsPage() {
   const [selected, setSelected] = useState<AnalyticsTab>("category");

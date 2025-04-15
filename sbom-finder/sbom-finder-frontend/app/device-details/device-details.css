@@ -141,3 +141,10 @@
   font-size: 0.75rem;
   font-weight: 500;
 }
+
+.device-details-container {
+    background-color: #024950;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+}

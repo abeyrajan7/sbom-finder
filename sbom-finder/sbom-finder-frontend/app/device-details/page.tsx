@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import "./device-details.css";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export default function DeviceDetailsPage() {
@@ -49,6 +48,7 @@ export default function DeviceDetailsPage() {
         </button>
       </section>
 
+      <div className="device-details-container">
       <section className="device-section">
         <div className="section-header">
           <h2>Device Information</h2>
@@ -69,10 +69,10 @@ export default function DeviceDetailsPage() {
       </section>
 
       {/* Section 2: OS Info */}
-      <section className="device-section">
+      <section className="device-section" onClick={() => toggleSection("os")}>
         <div className="section-header">
           <h2>Operating System</h2>
-          <button onClick={() => toggleSection("os")}>
+          <button>
             {openSections.os ? "−" : "+"}
           </button>
         </div>
@@ -92,10 +92,10 @@ export default function DeviceDetailsPage() {
       </section>
 
       {/* Section 3: Digital Footprint */}
-      <section className="device-section">
+      <section className="device-section" onClick={() => toggleSection("footprint")}>
         <div className="section-header">
           <h2>Digital Footprint</h2>
-          <button onClick={() => toggleSection("footprint")}>
+          <button>
             {openSections.footprint ? "−" : "+"}
           </button>
         </div>
@@ -103,10 +103,10 @@ export default function DeviceDetailsPage() {
       </section>
 
       {/* Section 4: Software Packages */}
-      <section className="device-section device-packages">
+      <section className="device-section device-packages" onClick={() => toggleSection("packages")}>
         <div className="section-header">
           <h2>Software Packages</h2>
-          <button onClick={() => toggleSection("packages")}>
+          <button>
             {openSections.packages ? "−" : "+"}
           </button>
         </div>
@@ -131,10 +131,10 @@ export default function DeviceDetailsPage() {
       </section>
 
       {/* Section 5: Vulnerabilities */}
-      <section className="device-section">
+      <section className="device-section" onClick={() => toggleSection("vulnerabilities")}>
         <div className="section-header">
           <h2>Vulnerabilities</h2>
-          <button onClick={() => toggleSection("vulnerabilities")}>
+          <button>
             {openSections.vulnerabilities ? "−" : "+"}
           </button>
         </div>
@@ -169,10 +169,10 @@ export default function DeviceDetailsPage() {
         )}
       </section>
 
-      <section className="device-section">
+      <section className="device-section" onClick={() => toggleSection("externalReferences")}>
         <div className="section-header">
           <h2>External References</h2>
-          <button onClick={() => toggleSection("externalReferences")}>
+          <button>
             {openSections.externalReferences ? "−" : "+"}
           </button>
         </div>
@@ -217,6 +217,7 @@ export default function DeviceDetailsPage() {
           </>
         )}
       </section>
+      </div>
     </>
   );
 }
