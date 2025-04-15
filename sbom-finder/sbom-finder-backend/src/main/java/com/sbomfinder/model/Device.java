@@ -21,7 +21,7 @@ public class Device {
     private String manufacturer;
 
     @Column
-    private String category; // ✅ User will manually input this
+    private String category; // User will manually input this
 
     @Column(name = "operating_system")
     private String operatingSystem;

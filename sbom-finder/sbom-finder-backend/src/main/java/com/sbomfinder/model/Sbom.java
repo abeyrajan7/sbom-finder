@@ -16,6 +16,9 @@ public class Sbom {
     @Column(nullable = false)
     private String name;
 
+    @Column(unique = true)
+    private String hash;
+
     @Column(name = "spdx_version", nullable = false)
     private String spdxVersion;
 
@@ -45,7 +48,7 @@ public class Sbom {
 
     public Sbom() {}
 
-    public Sbom(String name, String spdxVersion, String dataLicense, String documentNamespace, LocalDateTime created, String creatorOrganization, String creatorTool) {
+    public Sbom(String name, String spdxVersion, String dataLicense, String documentNamespace, LocalDateTime created, String creatorOrganization, String creatorTool, String hash) {
         this.name = name;
         this.spdxVersion = spdxVersion;
         this.dataLicense = dataLicense;
@@ -53,6 +56,7 @@ public class Sbom {
         this.created = created;
         this.creatorOrganization = creatorOrganization;
         this.creatorTool = creatorTool;
+        this.hash = hash;
     }
 
     // Getters
@@ -66,6 +70,7 @@ public class Sbom {
     public String getCreatorTool() { return creatorTool; }
     public List<SoftwarePackage> getSoftwarePackages() { return softwarePackages; }
     public List<ExternalReference> getExternalReferences() { return externalReferences; }
+    public String getHash() { return hash; }
 
     // Setters
     public void setId(Long id) { this.id = id; }
@@ -78,4 +83,6 @@ public class Sbom {
     public void setCreatorTool(String creatorTool) { this.creatorTool = creatorTool; }
     public void setSoftwarePackages(List<SoftwarePackage> softwarePackages) { this.softwarePackages = softwarePackages; }
     public void setExternalReferences(List<ExternalReference> externalReferences) { this.externalReferences = externalReferences; }
+    public void setHash(String hash) { this.hash = hash; }
+
 }

@@ -14,11 +14,14 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import com.sbomfinder.model.Vulnerability;
 import com.sbomfinder.repository.VulnerabilityRepository;
+import com.sbomfinder.repository.SbomRepository;
 import java.net.URI;
 import java.net.URISyntaxException;
 import com.sbomfinder.dto.VulnerabilityDTO;
 import java.util.stream.Collectors;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import org.apache.commons.codec.digest.DigestUtils;
 
 @Service
 public class SbomService {
@@ -27,6 +30,8 @@ public class SbomService {
     private VulnerabilityRepository vulnerabilityRepository;
     @Autowired
     private SoftwarePackageRepository softwarePackageRepository;
+    @Autowired
+    private SbomRepository sbomRepository;
 
     public void processSpdxPackages(List<JsonNode> packagesList, Sbom sbom, Device device) {
         for (JsonNode pkg : packagesList) {
@@ -232,6 +237,17 @@ public class SbomService {
                 ? rawName.substring(rawName.lastIndexOf("/") + 1)
                 : rawName;
         return cleaned.replace("-", " ").trim();
+    }
+
+
+
+    public String generateHash(MultipartFile file) throws IOException {
+        return DigestUtils.sha256Hex(file.getInputStream());
+    }
+
+    public boolean fileAlreadyExists(MultipartFile file) throws IOException {
+        String hash = DigestUtils.sha256Hex(file.getInputStream());
+        return sbomRepository.existsByHash(hash);
     }
 
 }

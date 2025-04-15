@@ -44,7 +44,7 @@ public class SoftwarePackage {
     @Column(name = "copyright_text")
     private String copyrightText;
 
-    @Column(name = "component_type") // ✅ New Field: OS, Kernel, or Application
+    @Column(name = "component_type") // New Field: OS, Kernel, or Application
     private String componentType;
 
     @Column(name = "purl") 

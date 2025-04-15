@@ -266,4 +266,70 @@ public class DeviceController {
 
         return ResponseEntity.ok(result);
     }
+
+    //search api
+    @GetMapping("/search")
+    public ResponseEntity<List<DeviceDetailsDTO>> searchDevices(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String manufacturer,
+            @RequestParam(required = false) String operatingSystem) {
+
+        List<Device> devices = deviceRepository.searchWithFilters(query, manufacturer, operatingSystem);
+
+        List<DeviceDetailsDTO> deviceDetailsList = devices.stream().map(device -> {
+            List<SoftwarePackageDTO> softwarePackageDTOs = softwarePackageRepository
+                    .findByDeviceNameAndManufacturer(device.getDeviceName(), device.getManufacturer())
+                    .stream()
+                    .map(pkg -> {
+                        List<VulnerabilityDTO> vulnDTOs = pkg.getVulnerabilities().stream().map(v -> {
+                            VulnerabilityDTO dto = new VulnerabilityDTO();
+                            dto.setCveId(v.getCveId());
+                            dto.setDescription(v.getDescription());
+                            dto.setSeverity(v.getSeverity());
+                            dto.setSourceUrl(v.getSourceUrl());
+                            dto.setSeverityLevel(v.getSeverityLevel());
+                            return dto;
+                        }).collect(Collectors.toList());
+
+                        return new SoftwarePackageDTO(
+                                pkg.getName(),
+                                pkg.getVersion(),
+                                pkg.getSupplier(),
+                                pkg.getComponentType(),
+                                vulnDTOs
+                        );
+                    })
+                    .collect(Collectors.toList());
+
+            List<ExternalReferenceDTO> externalReferenceDTOs = externalReferenceRepository
+                    .findByDeviceNameAndManufacturer(device.getDeviceName(), device.getManufacturer())
+                    .stream()
+                    .map(ref -> new ExternalReferenceDTO(
+                            ref.getReferenceCategory(),
+                            ref.getReferenceType(),
+                            ref.getReferenceLocator()
+                    ))
+                    .collect(Collectors.toList());
+
+            List<VulnerabilityDTO> vulnDTOs = deviceService.getVulnerabilitiesForDevice(device);
+
+            return new DeviceDetailsDTO(
+                    device.getDeviceName(),
+                    device.getManufacturer(),
+                    device.getCategory(),
+                    device.getOperatingSystem(),
+                    device.getOsVersion(),
+                    device.getKernelVersion(),
+                    device.getDigitalFootprint(),
+                    device.getSbom().getId(),
+                    device.getId(),
+                    softwarePackageDTOs,
+                    externalReferenceDTOs,
+                    vulnDTOs
+            );
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(deviceDetailsList);
+    }
+
 }

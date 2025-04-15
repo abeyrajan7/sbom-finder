@@ -33,6 +33,7 @@ import com.sbomfinder.repository.DeviceRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.sbomfinder.service.SbomService;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000") 
@@ -60,7 +61,16 @@ public class SbomController {
     @PostMapping("/upload-sbom")
 public ResponseEntity<String> uploadSbom(@RequestParam("sbomFile") MultipartFile sbomFile,
                                          @RequestParam("category") String category) {
+
+
     try {
+
+        String hash = sbomService.generateHash(sbomFile);
+
+        if (sbomRepository.existsByHash(hash)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("SBOM already exists.");
+        }
+
         JsonNode jsonNode = objectMapper.readTree(sbomFile.getInputStream());
         String format = detectFormat(jsonNode);
 
@@ -77,7 +87,7 @@ public ResponseEntity<String> uploadSbom(@RequestParam("sbomFile") MultipartFile
         }
         Sbom newSbom = new Sbom(sbomData.getFormat(), sbomData.getSpecVersion(), sbomData.getDataLicense(),
                 sbomData.getDocumentNamespace(), sbomData.getCreatedTime(),
-                sbomData.getVendor(), sbomData.getToolName());
+                sbomData.getVendor(), sbomData.getToolName(), hash);
         sbomRepository.save(newSbom);
 
         // Save External References
