@@ -90,10 +90,6 @@ export default function CompareSbomsPage() {
       .catch((err) => console.error("Error comparing SBOMs:", err));
   };
 
-  // const toggleVulns = (pkgKey: string) => {
-  //   setVisibleVulns((prev) => ({ ...prev, [pkgKey]: !prev[pkgKey] }));
-  // };
-
   return (
     <div className="compare-container">
       <h1 className="compare-title">Compare SBOMs of Devices</h1>
@@ -289,7 +285,11 @@ export default function CompareSbomsPage() {
                       <td>
                         {Array.isArray(row.device1Value)
                           ? row.device1Value.length > 0
-                            ? row.device1Value.map((ref: any, i: number) => (
+                            ? row.device1Value.map((ref: {
+                                    referenceCategory: string;
+                                    referenceType: string;
+                                    referenceLocator: string;
+                                  }, i: number) => (
                                 <div key={i}>
                                   <strong>{ref.referenceCategory}</strong>:{" "}
                                   {ref.referenceType} →{" "}
@@ -309,7 +309,11 @@ export default function CompareSbomsPage() {
                       <td>
                         {Array.isArray(row.device2Value)
                           ? row.device2Value.length > 0
-                            ? row.device2Value.map((ref: any, i: number) => (
+                            ? row.device2Value.map((ref: {
+                                    referenceCategory: string;
+                                    referenceType: string;
+                                    referenceLocator: string;
+                                  }, i: number) => (
                                 <div key={i}>
                                   <strong>{ref.referenceCategory}</strong>:{" "}
                                   {ref.referenceType} →{" "}

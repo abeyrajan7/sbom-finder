@@ -6,9 +6,30 @@ import "./device-details.css";
 import { useRouter } from "next/navigation";
 
 export default function DeviceDetailsPage() {
+    interface DeviceDetail {
+        name: string;
+        manufacturer: string;
+        category: string;
+        operatingSystem: string;
+        osVersion: string;
+        kernelVersion: string;
+        digitalFootprint: string;
+        softwarePackages: { name: string; version: string }[];
+        vulnerabilities: {
+          cveId: string;
+          description: string;
+          severityLevel: string;
+          sourceUrl?: string;
+        }[];
+        externalReferences: {
+          referenceCategory: string;
+          referenceType: string;
+          referenceLocator: string;
+        }[];
+      }
   const searchParams = useSearchParams();
   const device_id = searchParams.get("device_id");
-  const [deviceDetails, setDeviceDetails] = useState<any>(null);
+  const [deviceDetails, setDeviceDetails] = useState<DeviceDetail | null>(null);
   const router = useRouter();
   const [openSections, setOpenSections] = useState({
     info: true,

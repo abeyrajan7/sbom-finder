@@ -21,8 +21,7 @@ export default function UploadSBOMPage() {
           const isCycloneDX = content.bomFormat === "CycloneDX";
           const isCPE =
             Array.isArray(content.components) &&
-            content.components.some((comp: any) => comp.cpe);
-
+            content.components.some((comp: { cpe?: string }) => !!comp.cpe)
           if (!isSPDX && !isCycloneDX && !isCPE) {
             setError("Upload SPDX, CycloneDX, or CPE formatted SBOM files.");
             resolve(false);
