@@ -347,8 +347,28 @@ export default function CompareSbomsPage() {
                     </>
                   ) : (
                     <>
-                      <td>{row.device1Value}</td>
-                      <td>{row.device2Value}</td>
+                      <td>
+                        {Array.isArray(row.device1Value)
+                          ? row.device1Value.length > 0
+                            ? row.device1Value.map((pkg, i) => (
+                                <div key={i}>
+                                  {(pkg as SoftwarePackage).name} =&gt; {(pkg as SoftwarePackage).version}
+                                </div>
+                              ))
+                            : "Not Available"
+                          : row.device1Value}
+                      </td>
+                      <td>
+                        {Array.isArray(row.device2Value)
+                          ? row.device2Value.length > 0
+                            ? row.device2Value.map((pkg, i) => (
+                                <div key={i}>
+                                  {(pkg as SoftwarePackage).name} =&gt; {(pkg as SoftwarePackage).version}
+                                </div>
+                              ))
+                            : "Not Available"
+                          : row.device2Value}
+                      </td>
                     </>
                   )}
                 </tr>
