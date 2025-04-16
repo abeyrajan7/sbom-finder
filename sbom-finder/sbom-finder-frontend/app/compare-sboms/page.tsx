@@ -285,11 +285,11 @@ export default function CompareSbomsPage() {
                       <td>
                         {Array.isArray(row.device1Value)
                           ? row.device1Value.length > 0
-                            ? row.device1Value.map((ref: {
-                                    referenceCategory: string;
-                                    referenceType: string;
-                                    referenceLocator: string;
-                                  }, i: number) => (
+                            ? (row.device1Value as {
+                                referenceCategory: string;
+                                referenceType: string;
+                                referenceLocator: string;
+                              }[]).map((ref, i) => (
                                 <div key={i}>
                                   <strong>{ref.referenceCategory}</strong>:{" "}
                                   {ref.referenceType} →{" "}
@@ -309,11 +309,11 @@ export default function CompareSbomsPage() {
                       <td>
                         {Array.isArray(row.device2Value)
                           ? row.device2Value.length > 0
-                            ? row.device2Value.map((ref: {
-                                    referenceCategory: string;
-                                    referenceType: string;
-                                    referenceLocator: string;
-                                  }, i: number) => (
+                            ? (row.device2Value as {
+                                referenceCategory: string;
+                                referenceType: string;
+                                referenceLocator: string;
+                              }[]).map((ref, i) => (
                                 <div key={i}>
                                   <strong>{ref.referenceCategory}</strong>:{" "}
                                   {ref.referenceType} →{" "}
