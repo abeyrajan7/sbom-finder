@@ -5,8 +5,25 @@ import { useEffect, useState } from "react";
 import "./device-details.css";
 import { useRouter } from "next/navigation";
 
-export default function DeviceDetailsPage() {
-    interface DeviceDetail {
+interface SoftwarePackage {
+  name: string;
+  version: string;
+}
+
+interface Vulnerability {
+  cveId: string;
+  description: string;
+  severityLevel: string;
+  sourceUrl?: string;
+}
+
+interface ExternalReference {
+  referenceCategory: string;
+  referenceType: string;
+  referenceLocator: string;
+}
+
+interface DeviceDetail {
         name: string;
         manufacturer: string;
         category: string;
@@ -26,7 +43,9 @@ export default function DeviceDetailsPage() {
           referenceType: string;
           referenceLocator: string;
         }[];
-      }
+    }
+export default function DeviceDetailsPage() {
+
   const searchParams = useSearchParams();
   const device_id = searchParams.get("device_id");
   const [deviceDetails, setDeviceDetails] = useState<DeviceDetail | null>(null);
@@ -136,8 +155,7 @@ export default function DeviceDetailsPage() {
             {deviceDetails.softwarePackages &&
             deviceDetails.softwarePackages.length > 0 ? (
               <ul className="package-grid">
-                {deviceDetails.softwarePackages.map(
-                  (pkg: any, index: number) => (
+                {deviceDetails.softwarePackages.map((pkg: SoftwarePackage, index: number) => (
                     <li key={index}>
                       {pkg.name} =&gt; {pkg.version}
                     </li>
@@ -164,7 +182,7 @@ export default function DeviceDetailsPage() {
             <>
               {deviceDetails.vulnerabilities &&
               deviceDetails.vulnerabilities.length > 0 ? (
-                deviceDetails.vulnerabilities.map((vul: any, index: number) => (
+                deviceDetails.vulnerabilities.map((vul: Vulnerability, index: number) => (
                   <div className="vuln-card" key={index}>
                     <h4>{vul.cveId}</h4>
                     <p>{vul.description}</p>
@@ -203,8 +221,7 @@ export default function DeviceDetailsPage() {
             {deviceDetails.externalReferences &&
             deviceDetails.externalReferences.length > 0 ? (
               <div className="reference-grid">
-                {deviceDetails.externalReferences.map(
-                  (ref: any, index: number) => (
+                {deviceDetails.externalReferences.map((ref: ExternalReference, index: number) => (
                     <div className="reference-card" key={index}>
                       <p>
                         <strong>Category:</strong> {ref.referenceCategory}
