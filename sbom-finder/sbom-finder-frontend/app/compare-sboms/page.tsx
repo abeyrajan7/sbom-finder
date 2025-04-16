@@ -40,6 +40,26 @@ const fieldLabels: { [key: string]: string } = {
   externalReferences: "External References",
 };
 
+type ExternalReference = {
+  referenceCategory: string;
+  referenceType: string;
+  referenceLocator: string;
+};
+
+function isExternalReferenceArray(arr: unknown): arr is ExternalReference[] {
+  return (
+    Array.isArray(arr) &&
+    arr.every(
+      (ref) =>
+        typeof ref === "object" &&
+        ref !== null &&
+        "referenceCategory" in ref &&
+        "referenceType" in ref &&
+        "referenceLocator" in ref
+    )
+  );
+}
+
 export default function CompareSbomsPage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [device1Id, setDevice1Id] = useState("");
@@ -283,46 +303,47 @@ export default function CompareSbomsPage() {
                   ) : row.field === "externalReferences" ? (
                     <>
                       <td>
-                        {Array.isArray(row.device1Value)
-                          ? row.device1Value.length > 0
-                            ? (row.device1Value as any[]).every(ref => 'referenceCategory' in ref)
-                              ? (row.device1Value as {
-                                  referenceCategory: string;
-                                  referenceType: string;
-                                  referenceLocator: string;
-                                }[]).map((ref, i) => (
-                                  <div key={i}>
-                                    <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
-                                    <a href={ref.referenceLocator} target="_blank" rel="noopener noreferrer">
-                                      {ref.referenceLocator}
-                                    </a>
-                                  </div>
-                                ))
-                              : "Not Available"
-                            : "Not Available"
-                          : row.device1Value}
+                        {isExternalReferenceArray(row.device1Value) ? (
+                          row.device1Value.map((ref, i) => (
+                            <div key={i}>
+                              <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
+                              <a
+                                href={ref.referenceLocator}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {ref.referenceLocator}
+                              </a>
+                            </div>
+                          ))
+                        ) : (
+                          <span>
+                            {typeof row.device1Value === "string" ? row.device1Value : "Not Available"}
+                          </span>
+                        )}
                       </td>
                       {/* Device 2 value */}
                       <td>
-                        {Array.isArray(row.device2Value)
-                          ? row.device2Value.length > 0
-                            ? (row.device2Value as any[]).every(ref => 'referenceCategory' in ref)
-                              ? (row.device2Value as {
-                                  referenceCategory: string;
-                                  referenceType: string;
-                                  referenceLocator: string;
-                                }[]).map((ref, i) => (
-                                  <div key={i}>
-                                    <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
-                                    <a href={ref.referenceLocator} target="_blank" rel="noopener noreferrer">
-                                      {ref.referenceLocator}
-                                    </a>
-                                  </div>
-                                ))
-                              : "Not Available"
-                            : "Not Available"
-                          : row.device2Value}
+                        {isExternalReferenceArray(row.device2Value) ? (
+                          row.device2Value.map((ref, i) => (
+                            <div key={i}>
+                              <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
+                              <a
+                                href={ref.referenceLocator}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {ref.referenceLocator}
+                              </a>
+                            </div>
+                          ))
+                        ) : (
+                          <span>
+                            {typeof row.device2Value === "string" ? row.device2Value : "Not Available"}
+                          </span>
+                        )}
                       </td>
+
                     </>
                   ) : (
                     <>
