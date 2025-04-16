@@ -1,9 +1,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import "./device-details.css";
 import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 
 interface SoftwarePackage {
   name: string;
@@ -80,7 +80,7 @@ export default function DeviceDetailsPage() {
   if (!deviceDetails) return <div>Loading...</div>;
 
   return (
-    <>
+    <Suspense fallback={<div>Loading device page...</div>}>
       {/* Section 1: Device Info */}
       <section className="back-button-container">
         <button onClick={() => router.back()} className="back-button">
@@ -256,6 +256,6 @@ export default function DeviceDetailsPage() {
         )}
       </section>
       </div>
-    </>
+    </Suspense>
   );
 }
