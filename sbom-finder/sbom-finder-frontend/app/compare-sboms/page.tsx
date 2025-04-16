@@ -285,23 +285,20 @@ export default function CompareSbomsPage() {
                       <td>
                         {Array.isArray(row.device1Value)
                           ? row.device1Value.length > 0
-                            ? (row.device1Value as {
-                                referenceCategory: string;
-                                referenceType: string;
-                                referenceLocator: string;
-                              }[]).map((ref, i) => (
-                                <div key={i}>
-                                  <strong>{ref.referenceCategory}</strong>:{" "}
-                                  {ref.referenceType} →{" "}
-                                  <a
-                                    href={ref.referenceLocator}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    {ref.referenceLocator}
-                                  </a>
-                                </div>
-                              ))
+                            ? (row.device1Value as any[]).every(ref => 'referenceCategory' in ref)
+                              ? (row.device1Value as {
+                                  referenceCategory: string;
+                                  referenceType: string;
+                                  referenceLocator: string;
+                                }[]).map((ref, i) => (
+                                  <div key={i}>
+                                    <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
+                                    <a href={ref.referenceLocator} target="_blank" rel="noopener noreferrer">
+                                      {ref.referenceLocator}
+                                    </a>
+                                  </div>
+                                ))
+                              : "Not Available"
                             : "Not Available"
                           : row.device1Value}
                       </td>
@@ -309,23 +306,20 @@ export default function CompareSbomsPage() {
                       <td>
                         {Array.isArray(row.device2Value)
                           ? row.device2Value.length > 0
-                            ? (row.device2Value as {
-                                referenceCategory: string;
-                                referenceType: string;
-                                referenceLocator: string;
-                              }[]).map((ref, i) => (
-                                <div key={i}>
-                                  <strong>{ref.referenceCategory}</strong>:{" "}
-                                  {ref.referenceType} →{" "}
-                                  <a
-                                    href={ref.referenceLocator}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    {ref.referenceLocator}
-                                  </a>
-                                </div>
-                              ))
+                            ? (row.device2Value as any[]).every(ref => 'referenceCategory' in ref)
+                              ? (row.device2Value as {
+                                  referenceCategory: string;
+                                  referenceType: string;
+                                  referenceLocator: string;
+                                }[]).map((ref, i) => (
+                                  <div key={i}>
+                                    <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
+                                    <a href={ref.referenceLocator} target="_blank" rel="noopener noreferrer">
+                                      {ref.referenceLocator}
+                                    </a>
+                                  </div>
+                                ))
+                              : "Not Available"
                             : "Not Available"
                           : row.device2Value}
                       </td>
