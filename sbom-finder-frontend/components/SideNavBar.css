@@ -1,0 +1,49 @@
+.nav-bar {
+    position: fixed; /* Keeps the nav bar in place */
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 12%;
+    border: 1px solid black;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    background-color: white; /* Optional: prevent content bleed-through */
+    z-index: 1000; /* Ensures it stays on top of other content */
+}
+
+.nav-bar-title-text {
+    font-size: 3vh;
+    margin-left: 8px;
+}
+
+.nav-bar-line {
+    border: 1px solid black;
+    margin-top: 1vh;
+}
+
+.nav-list {
+    margin: 13%;
+    display: inline-grid;
+    gap: 17px;
+    list-style: none; 
+}
+
+.nav-icon {
+    color: transparent;
+    height: 46%;
+    margin-top: 2%;
+    margin-right: 2%;
+    width: 4%;
+}
+
+.nav-item {
+    cursor: pointer;
+}
+
+.back-button {
+    cursor: pointer
+}
+
+.active {
+    color: green;
+}

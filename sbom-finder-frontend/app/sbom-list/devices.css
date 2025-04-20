@@ -1,0 +1,34 @@
+.devices-container {
+    width: 90%;
+    margin: auto;
+    text-align: center;
+     max-height: 90vh;
+  }
+  
+  h2 {
+    margin-bottom: 20px;
+  }
+  
+  .devices-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .devices-table th, .devices-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .devices-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .table-scroll-wrapper {
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+  }

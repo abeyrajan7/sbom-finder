@@ -1,0 +1,51 @@
+/* Full screen container with light gradient background */
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+/* Card box with shadow and rounded corners */
+.dashboard-box {
+  background-color: #ffffff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  padding: 2.5rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Heading */
+.dashboard-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1f2937; /* gray-800 */
+  margin-bottom: 1rem;
+}
+
+/* Description text */
+.dashboard-description {
+  font-size: 1rem;
+  color: #4b5563; /* gray-600 */
+  margin-bottom: 1.5rem;
+}
+
+/* Upload button */
+.upload-btn {
+  background-color: #2563eb; /* blue-600 */
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.upload-btn:hover {
+  background-color: #1d4ed8; /* blue-700 */
+}

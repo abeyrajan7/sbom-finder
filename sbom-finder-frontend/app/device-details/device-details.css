@@ -1,0 +1,150 @@
+.device-details-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.device-section {
+  border: 1px solid #ddd;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.device-section h2 {
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.device-section li {
+  margin-bottom: 6px;
+}
+
+.package-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.package-grid li {
+  background: #f9f9f9;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.vulnerability-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.vuln-card {
+  background: #fff3f3;
+  border: 1px solid #ffa6a6;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.vuln-card h4 {
+  margin: 0 0 8px;
+  color: #c0392b;
+}
+
+.vuln-card p {
+  margin: 4px 0;
+}
+
+.vuln-card a {
+  display: inline-block;
+  margin-top: 8px;
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.device-section {
+  margin-bottom: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9f9f9;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header button {
+  font-size: 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+
+.back-button-container {
+  margin-bottom: 1rem;
+}
+
+.back-button {
+  background-color: #e5e7eb;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #d1d5db;
+}
+
+/* external references */
+.reference-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.reference-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #f9f9f9;
+}
+
+/* packages */
+.pkg-block {
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.vuln-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.vuln-tag {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.device-details-container {
+    background-color: #024950;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+}
