@@ -1,0 +1,11 @@
+# .gitignore
+node_modules/
+.env
+.next/
+target/
+*.log
+*.class
+*.jar
+.idea/
+*.iml
+.DS_Store
