@@ -7,14 +7,16 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
-    
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/**").permitAll()
-            );
+                .anyRequest().permitAll()
+            )
+            .httpBasic(httpBasic -> httpBasic.disable()) // ⬅️ disable HTTP Basic
+            .formLogin(formLogin -> formLogin.disable()); // ⬅️ disable Form login
         return http.build();
     }
 }
