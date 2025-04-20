@@ -41,6 +41,7 @@ export default function DeviceDetailsContent() {
   const device_id = searchParams.get("device_id");
   const [deviceDetails, setDeviceDetails] = useState<DeviceDetail | null>(null);
   const router = useRouter();
+  const BASE_URL = "https://sbom-finder-backend.onrender.com";
 
   const [openSections, setOpenSections] = useState({
     info: true,
@@ -60,7 +61,7 @@ export default function DeviceDetailsContent() {
   useEffect(() => {
     if (!device_id) return;
 
-    fetch(`http://localhost:8080/api/devices/${device_id}/details`)
+    fetch(`${BASE_URL}/api/devices/${device_id}/details`)
       .then((res) => res.json())
       .then((data) => setDeviceDetails(data))
       .catch((err) => console.error("Error fetching device details:", err));

@@ -65,9 +65,10 @@ export default function CompareSbomsPage() {
   const [device1Id, setDevice1Id] = useState("");
   const [device2Id, setDevice2Id] = useState("");
   const [comparisonData, setComparisonData] = useState<ComparisonResult[]>([]);
+  const BASE_URL = "https://sbom-finder-backend.onrender.com";
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/devices/list")
+    fetch(`${BASE_URL}/api/devices/list`)
       .then((res) => res.json())
       .then((data) => setDevices(data))
       .catch((err) => console.error("Error fetching devices list:", err));
@@ -77,7 +78,7 @@ export default function CompareSbomsPage() {
     if (!device1Id || !device2Id) return;
 
     fetch(
-      `http://localhost:8080/api/devices/compare?device1Id=${device1Id}&device2Id=${device2Id}`
+      `${BASE_URL}/api/devices/compare?device1Id=${device1Id}&device2Id=${device2Id}`
     )
       .then((res) => res.json())
       .then((data) => {

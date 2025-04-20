@@ -4,8 +4,8 @@ import React, { useState, useRef } from "react";
 import "./upload.css";
 
 export default function UploadSBOMPage() {
+  const BASE_URL = "https://sbom-finder-backend.onrender.com";
   const [uploadType, setUploadType] = useState<"file" | "repo">("file");
-
   const [file, setFile] = useState<File | null>(null);
   const [repoUrl, setRepoUrl] = useState("");
   const [manufacturer, setManufacturer] = useState("");
@@ -47,7 +47,7 @@ export default function UploadSBOMPage() {
     try {
       let response;
       if (uploadType === "file") {
-        response = await fetch("http://localhost:8080/api/sboms/upload-sbom", {
+        response = await fetch(`${BASE_URL}/api/sboms/upload-sbom`, {
           method: "POST",
           body: formData,
         });
@@ -62,7 +62,7 @@ export default function UploadSBOMPage() {
           kernelVersion: kernelVersion || "Unknown Kernel",
         };
 
-        response = await fetch("http://localhost:8080/api/sboms/from-repo", {
+        response = await fetch(`${BASE_URL}/api/sboms/from-repo`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -130,7 +130,6 @@ export default function UploadSBOMPage() {
               className="text-input"
               key={uploadType} // ✅ very important
             />
-
           </>
         ) : (
           <>
@@ -146,11 +145,13 @@ export default function UploadSBOMPage() {
 
         {/* Common Fields */}
         <select
-        className="dropdown"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
+          className="dropdown"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
         >
-          <option value="" disabled hidden>Select Category</option>
+          <option value="" disabled hidden>
+            Select Category
+          </option>
           <option value="Fitness Wearables">Fitness Wearables</option>
           <option value="Smart Home">Smart Home</option>
         </select>
@@ -171,8 +172,6 @@ export default function UploadSBOMPage() {
           value={manufacturer}
           onChange={(e) => setManufacturer(e.target.value)}
         />
-
-
 
         <input
           type="text"
@@ -196,7 +195,11 @@ export default function UploadSBOMPage() {
           onChange={(e) => setKernelVersion(e.target.value)}
         />
 
-        <button className="upload-button" onClick={handleUpload} disabled={loading}>
+        <button
+          className="upload-button"
+          onClick={handleUpload}
+          disabled={loading}
+        >
           {loading ? "Uploading..." : "Upload"}
         </button>
 

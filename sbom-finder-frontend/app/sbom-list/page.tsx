@@ -18,7 +18,7 @@ interface Device {
 }
 
 export default function DevicesPage() {
-    const BASE_URL = 'http://localhost:8080';
+  const BASE_URL = 'https://sbom-finder-backend.onrender.com';
   const [devices, setDevices] = useState<Device[]>([]);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
 
@@ -56,7 +56,7 @@ export default function DevicesPage() {
   const handleDelete = async (deviceId : number) => {
     if (confirm("Are you sure you want to delete this SBOM?")) {
       try {
-        const response = await fetch(`http://localhost:8080/api/devices/${deviceId}`, {
+        const response = await fetch(`${BASE_URL}/api/devices/${deviceId}`, {
           method: "DELETE",
         });
 
@@ -147,7 +147,7 @@ export default function DevicesPage() {
                       {openDropdown === index && (
                         <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded shadow-md z-10">
                           <a
-                            href={`http://localhost:8080/api/devices/download/${device.deviceId}?format=cyclonedx`}
+                            href={`${BASE_URL}/api/devices/download/${device.deviceId}?format=cyclonedx`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -155,7 +155,7 @@ export default function DevicesPage() {
                             CycloneDX
                           </a>
                           <a
-                            href={`http://localhost:8080/api/devices/download/${device.deviceId}?format=spdx`}
+                            href={`${BASE_URL}/api/devices/download/${device.deviceId}?format=spdx`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
