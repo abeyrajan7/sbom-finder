@@ -14,9 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
                 "https://sbom-finder-clean.vercel.app",
                 "http://localhost:3000"
             )
-            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // ✅ add OPTIONS too
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
-            .exposedHeaders("*") // ✅ expose headers (optional but useful)
+            .exposedHeaders("*")
             .allowCredentials(true);
     }
 }
