@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // Allow all endpoints
                 .allowedOrigins(
-                    "https://your-vercel-frontend-url.vercel.app", 
+                    "https://sbom-finder-clean.vercel.app/dashboard", 
                     "http://localhost:3000"
                     )
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
