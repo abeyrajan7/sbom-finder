@@ -307,7 +307,8 @@ export default function CompareSbomsPage() {
                         {isExternalReferenceArray(row.device1Value) ? (
                           row.device1Value.map((ref, i) => (
                             <div key={i}>
-                              <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
+                              <strong>{ref.referenceCategory}</strong>:{" "}
+                              {ref.referenceType} →{" "}
                               <a
                                 href={ref.referenceLocator}
                                 target="_blank"
@@ -319,7 +320,9 @@ export default function CompareSbomsPage() {
                           ))
                         ) : (
                           <span>
-                            {typeof row.device1Value === "string" ? row.device1Value : "Not Available"}
+                            {typeof row.device1Value === "string"
+                              ? row.device1Value
+                              : "Not Available"}
                           </span>
                         )}
                       </td>
@@ -328,7 +331,8 @@ export default function CompareSbomsPage() {
                         {isExternalReferenceArray(row.device2Value) ? (
                           row.device2Value.map((ref, i) => (
                             <div key={i}>
-                              <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
+                              <strong>{ref.referenceCategory}</strong>:{" "}
+                              {ref.referenceType} →{" "}
                               <a
                                 href={ref.referenceLocator}
                                 target="_blank"
@@ -340,11 +344,12 @@ export default function CompareSbomsPage() {
                           ))
                         ) : (
                           <span>
-                            {typeof row.device2Value === "string" ? row.device2Value : "Not Available"}
+                            {typeof row.device2Value === "string"
+                              ? row.device2Value
+                              : "Not Available"}
                           </span>
                         )}
                       </td>
-
                     </>
                   ) : (
                     <>
@@ -353,7 +358,8 @@ export default function CompareSbomsPage() {
                           ? row.device1Value.length > 0
                             ? row.device1Value.map((pkg, i) => (
                                 <div key={i}>
-                                  {(pkg as SoftwarePackage).name} =&gt; {(pkg as SoftwarePackage).version}
+                                  {(pkg as SoftwarePackage).name} =&gt;{" "}
+                                  {(pkg as SoftwarePackage).version}
                                 </div>
                               ))
                             : "Not Available"
@@ -364,7 +370,8 @@ export default function CompareSbomsPage() {
                           ? row.device2Value.length > 0
                             ? row.device2Value.map((pkg, i) => (
                                 <div key={i}>
-                                  {(pkg as SoftwarePackage).name} =&gt; {(pkg as SoftwarePackage).version}
+                                  {(pkg as SoftwarePackage).name} =&gt;{" "}
+                                  {(pkg as SoftwarePackage).version}
                                 </div>
                               ))
                             : "Not Available"
