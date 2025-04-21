@@ -1,4 +1,4 @@
-package com.yourcompany.yourapp.config;
+package com.sbomfinder.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
