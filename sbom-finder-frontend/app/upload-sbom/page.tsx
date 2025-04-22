@@ -36,12 +36,8 @@ export default function UploadSBOMPage() {
 
     const formData = new FormData();
     if (uploadType === "archive") {
-      if (!file) {
-        alert("Please select a file before uploading!");
-        return;
-      } else {
-          formData.append("file", file);
-          }
+    if (file) {
+      formData.append("file", file);
       formData.append("category", category);
       formData.append("deviceName", deviceName);
       formData.append("manufacturer", manufacturer || "Unknown Manufacturer");
