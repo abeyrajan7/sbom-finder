@@ -66,6 +66,7 @@ export default function CompareSbomsPage() {
   const [device2Id, setDevice2Id] = useState("");
   const [comparisonData, setComparisonData] = useState<ComparisonResult[]>([]);
   const BASE_URL = "https://sbom-finder-backend.onrender.com";
+//   const BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/devices/list`)

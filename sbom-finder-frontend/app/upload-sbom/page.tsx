@@ -5,7 +5,8 @@ import "./upload.css";
 
 export default function UploadSBOMPage() {
   const BASE_URL = "https://sbom-finder-backend.onrender.com";
-  const [uploadType, setUploadType] = useState<"file" | "repo">("file");
+//   const BASE_URL = "http://localhost:8080";
+  const [uploadType, setUploadType] = useState<"archive" | "repo">("archive");
   const [file, setFile] = useState<File | null>(null);
   const [repoUrl, setRepoUrl] = useState("");
   const [manufacturer, setManufacturer] = useState("");
@@ -22,8 +23,8 @@ export default function UploadSBOMPage() {
   const handleUpload = async () => {
     setError(null);
 
-    if (uploadType === "file" && !file) {
-      setError("Please select a SBOM file to upload.");
+    if (uploadType === "archive" && !file) {
+      setError("Please select a Source to upload.");
       return;
     }
     if (uploadType === "repo" && !repoUrl) {
@@ -34,8 +35,8 @@ export default function UploadSBOMPage() {
     setLoading(true);
 
     const formData = new FormData();
-    if (uploadType === "file") {
-      formData.append("sbomFile", file!);
+    if (uploadType === "archive") {
+      formData.append("file", file);
       formData.append("category", category);
       formData.append("deviceName", deviceName);
       formData.append("manufacturer", manufacturer || "Unknown Manufacturer");
@@ -46,8 +47,8 @@ export default function UploadSBOMPage() {
 
     try {
       let response;
-      if (uploadType === "file") {
-        response = await fetch(`${BASE_URL}/api/sboms/upload-sbom`, {
+      if (uploadType === "archive") {
+        response = await fetch(`${BASE_URL}/api/sboms/upload-source`, {
           method: "POST",
           body: formData,
         });
@@ -55,7 +56,7 @@ export default function UploadSBOMPage() {
         const body = {
           repoUrl,
           category,
-          deviceName: "",
+          deviceName: deviceName,
           manufacturer: manufacturer || "Unknown Manufacturer",
           operatingSystem: operatingSystem || "Unknown OS",
           osVersion: osVersion || "Unknown Version",
@@ -105,10 +106,10 @@ export default function UploadSBOMPage() {
         {/* Upload Type Switch */}
         <div className="upload-type-toggle">
           <button
-            className={uploadType === "file" ? "active" : ""}
-            onClick={() => setUploadType("file")}
+            className={uploadType === "archive" ? "active" : ""}
+            onClick={() => setUploadType("archive")}
           >
-            Upload SBOM File
+            Upload Source Folder
           </button>
           <button
             className={uploadType === "repo" ? "active" : ""}
@@ -118,18 +119,19 @@ export default function UploadSBOMPage() {
           </button>
         </div>
 
-        {/* Upload Form */}
-        {uploadType === "file" ? (
+
+        {uploadType === "archive" ? (
           <>
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: uploadType === "file" ? "block" : "none" }}
-              accept=".json"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="text-input"
-              key={uploadType} // ✅ very important
-            />
+           <input
+             type="file"
+             ref={fileInputRef}
+             style={{ display: uploadType === "archive" ? "block" : "none" }}
+             accept=".zip,.tar,.tar.gz,.tgz"
+             onChange={(e) => setFile(e.target.files?.[0] || null)}
+             className="text-input"
+             key={uploadType} // ✅ very important to reset file input when type changes
+           />
+           <p style={{ fontSize: "0.8rem", color: "gray" }}>Accepted formats: .zip, .tar, .tar.gz, .tgz</p>
           </>
         ) : (
           <>
@@ -198,7 +200,11 @@ export default function UploadSBOMPage() {
         <button
           className="upload-button"
           onClick={handleUpload}
-          disabled={loading}
+          disabled={
+              loading ||
+              (uploadType === "archive" && (!file || !category || !deviceName)) ||
+              (uploadType === "repo" && (!repoUrl || !category || !deviceName))
+            }
         >
           {loading ? "Uploading..." : "Upload"}
         </button>

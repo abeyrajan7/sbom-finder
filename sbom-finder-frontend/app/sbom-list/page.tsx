@@ -19,6 +19,7 @@ interface Device {
 
 export default function DevicesPage() {
   const BASE_URL = 'https://sbom-finder-backend.onrender.com';
+//   const BASE_URL = "http://localhost:8080";
   const [devices, setDevices] = useState<Device[]>([]);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
 
@@ -56,7 +57,7 @@ export default function DevicesPage() {
   const handleDelete = async (deviceId : number) => {
     if (confirm("Are you sure you want to delete this SBOM?")) {
       try {
-        const response = await fetch(`${BASE_URL}/api/devices/${deviceId}`, {
+        const response = await fetch(`${BASE_URL}/api/sboms/${deviceId}`, {
           method: "DELETE",
         });
 

@@ -23,6 +23,8 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
     });
   };
 
+
+
   return (
     <div className="search-filter-container">
       <input

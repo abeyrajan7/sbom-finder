@@ -42,6 +42,7 @@ export default function DeviceDetailsContent() {
   const [deviceDetails, setDeviceDetails] = useState<DeviceDetail | null>(null);
   const router = useRouter();
   const BASE_URL = "https://sbom-finder-backend.onrender.com";
+//   const BASE_URL = "http://localhost:8080";
 
   const [openSections, setOpenSections] = useState({
     info: true,
@@ -124,7 +125,7 @@ export default function DeviceDetailsContent() {
             <button>{openSections.packages ? "−" : "+"}</button>
           </div>
           {openSections.packages && (
-            deviceDetails.softwarePackages.length > 0 ? (
+              (deviceDetails.softwarePackages?.length ?? 0) > 0 ? (
               <ul className="package-grid">
                 {deviceDetails.softwarePackages.map((pkg, idx) => (
                   <li key={idx}>
@@ -146,7 +147,7 @@ export default function DeviceDetailsContent() {
           </div>
           {openSections.vulnerabilities && (
             <div className="vulnerability-grid">
-              {deviceDetails.vulnerabilities.length > 0 ? (
+              {(deviceDetails.vulnerabilities?.length ?? 0) > 0 ? (
                 deviceDetails.vulnerabilities.map((vul, idx) => (
                   <div className="vuln-card" key={idx}>
                     <h4>{vul.cveId}</h4>
@@ -171,7 +172,7 @@ export default function DeviceDetailsContent() {
             <button>{openSections.externalReferences ? "−" : "+"}</button>
           </div>
           {openSections.externalReferences && (
-            deviceDetails.externalReferences.length > 0 ? (
+              (deviceDetails.externalReferences?.length ?? 0) > 0 ? (
               <div className="reference-grid">
                 {deviceDetails.externalReferences.map((ref, idx) => (
                   <div className="reference-card" key={idx}>
