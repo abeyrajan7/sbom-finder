@@ -39,7 +39,9 @@ export default function UploadSBOMPage() {
       if (!file) {
         alert("Please select a file before uploading!");
         return;
-      }
+      } else {
+          formData.append("file", file);
+          }
       formData.append("category", category);
       formData.append("deviceName", deviceName);
       formData.append("manufacturer", manufacturer || "Unknown Manufacturer");
