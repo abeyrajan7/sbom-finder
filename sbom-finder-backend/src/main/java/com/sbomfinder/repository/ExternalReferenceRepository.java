@@ -13,5 +13,6 @@ public interface ExternalReferenceRepository extends JpaRepository<ExternalRefer
     boolean existsByReferenceLocator(String referenceLocator);
     @Query("SELECT er FROM ExternalReference er WHERE er.sbom.device.deviceName = :deviceName AND er.sbom.device.manufacturer = :manufacturer")
     List<ExternalReference> findByDeviceNameAndManufacturer(String deviceName, String manufacturer);
+    void deleteBySbom_Id(Long sbomId);
 
 }

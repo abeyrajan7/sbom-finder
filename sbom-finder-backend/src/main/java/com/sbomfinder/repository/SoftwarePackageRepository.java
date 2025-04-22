@@ -27,6 +27,8 @@ public interface SoftwarePackageRepository extends JpaRepository<SoftwarePackage
         return findPackagesBySbomIdAndKeyword(sbomId, "driver");
     }
 
+    void deleteByDeviceId(Long deviceId);
+
     @Query("SELECT sp FROM SoftwarePackage sp WHERE sp.sbom.device.deviceName = :deviceName AND sp.sbom.device.manufacturer = :manufacturer")
     List<SoftwarePackage> findByDeviceNameAndManufacturer(String deviceName, String manufacturer);
 }

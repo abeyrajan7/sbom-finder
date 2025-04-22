@@ -37,8 +37,8 @@ public class Device {
 
     public Device() {}
 
-    public Device(String deviceName, String manufacturer, String category, String operatingSystem, String osVersion,
-                  String kernelVersion, String digitalFootprint, Sbom sbom) {
+    public Device(String deviceName, String manufacturer, String category,
+                  String operatingSystem, String osVersion, String kernelVersion, String digitalFootprint) {
         this.deviceName = deviceName;
         this.manufacturer = manufacturer;
         this.category = category;
@@ -46,8 +46,8 @@ public class Device {
         this.osVersion = osVersion;
         this.kernelVersion = kernelVersion;
         this.digitalFootprint = digitalFootprint;
-        this.sbom = sbom;
     }
+
 
     // ✅ Getters
     public Long getId() { return id; }

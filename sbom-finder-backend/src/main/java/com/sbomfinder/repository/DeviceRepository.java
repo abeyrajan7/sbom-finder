@@ -18,9 +18,8 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
                                    @Param("manufacturer") String manufacturer,
                                    @Param("operatingSystem") String operatingSystem);
 
-
+    long countByCategory(String category);
     Optional<Device> findByDeviceNameAndManufacturer(String deviceName, String manufacturer);
     Optional<Device> findById(Long id);
-
-
+    Optional<Device> findByDeviceNameAndManufacturerAndCategory(String deviceName, String manufacturer, String category);
 }

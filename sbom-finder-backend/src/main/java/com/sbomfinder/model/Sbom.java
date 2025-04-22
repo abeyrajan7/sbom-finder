@@ -13,41 +13,46 @@ public class Sbom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String name;
 
-    @Column(unique = true)
+    @Column(unique = true, columnDefinition = "TEXT")
     private String hash;
 
-    @Column(name = "spdx_version", nullable = false)
+    @Column(name = "spdx_version", nullable = false, columnDefinition = "TEXT")
     private String spdxVersion;
 
-    @Column(name = "data_license", nullable = false)
+    @Column(name = "data_license", nullable = false, columnDefinition = "TEXT")
     private String dataLicense;
 
-    @Column(name = "document_namespace", nullable = false)
+    @Column(name = "document_namespace", nullable = false, columnDefinition = "TEXT")
     private String documentNamespace;
 
     @Column(nullable = false)
     private LocalDateTime created;
 
-    @Column(name = "creator_organization")
+    @Column(name = "creator_organization", columnDefinition = "TEXT")
     private String creatorOrganization;
 
-    @Column(name = "creator_tool")
+    @Column(name = "creator_tool", columnDefinition = "TEXT")
     private String creatorTool;
 
     @Column(name = "sbom_content", columnDefinition = "TEXT")
     private String sbomContent;
-
-    @OneToOne(mappedBy = "sbom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Device device;
 
     @OneToMany(mappedBy = "sbom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ExternalReference> externalReferences;
 
     @OneToMany(mappedBy = "sbom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SoftwarePackage> softwarePackages;
+
+    @Column(name = "version")
+    private String version;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id")
+    private Device device;
+
 
     public Sbom() {}
 
@@ -75,6 +80,8 @@ public class Sbom {
     public List<ExternalReference> getExternalReferences() { return externalReferences; }
     public String getHash() { return hash; }
     public String getSbomContent() { return sbomContent; }
+    public String getVersion() { return version; }
+    public Device getDevice() { return device; }
 
     // Setters
     public void setId(Long id) { this.id = id; }
@@ -89,5 +96,7 @@ public class Sbom {
     public void setExternalReferences(List<ExternalReference> externalReferences) { this.externalReferences = externalReferences; }
     public void setHash(String hash) { this.hash = hash; }
     public void setSbomContent(String sbomContent) { this.sbomContent = sbomContent; }
+    public void setVersion(String version) { this.version = version; }
+    public void setDevice(Device device) { this.device = device; }
 
 }

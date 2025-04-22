@@ -3,6 +3,7 @@ package com.sbomfinder.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sbomfinder.dto.RepoRequestDTO;
+import com.sbomfinder.service.SbomGenerationResult;
 import com.sbomfinder.model.Device;
 import com.sbomfinder.model.ExternalReference;
 import com.sbomfinder.model.Sbom;
@@ -12,7 +13,10 @@ import com.sbomfinder.repository.ExternalReferenceRepository;
 import com.sbomfinder.repository.SbomRepository;
 import com.sbomfinder.repository.SoftwarePackageRepository;
 import com.sbomfinder.service.SbomService;
+import com.sbomfinder.service.SbomGeneratorService;
 import com.sbomfinder.util.CustomMultipartFile;
+import com.sbomfinder.util.ArchiveUtils;
+
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +43,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,7 +53,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:8080")
 @RequestMapping("/api/sboms")
 public class SbomController {
 
@@ -61,41 +67,17 @@ public class SbomController {
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private ExternalReferenceRepository externalReferenceRepository;
 
     @Autowired
-    private SbomService sbomService;
-
-    @PostMapping("/upload-sbom")
-    public ResponseEntity<String> uploadSbom(
-            @RequestParam("sbomFile") MultipartFile sbomFile,
-            @RequestParam("category") String category,
-            @RequestParam(value = "deviceName", required = false) String deviceName,
-            @RequestParam(value = "manufacturer", required = false) String manufacturer,
-            @RequestParam(value = "operatingSystem", required = false) String operatingSystem,
-            @RequestParam(value = "osVersion", required = false) String osVersion,
-            @RequestParam(value = "kernelVersion", required = false) String kernelVersion
-    )
-    {
-        try {
-            JsonNode jsonNode = objectMapper.readTree(sbomFile.getInputStream());
-            String result = sbomService.processSbomFromJson(jsonNode, category,
-                    deviceName, manufacturer, operatingSystem, osVersion, kernelVersion);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error parsing SBOM: " + e.getMessage());
-        }
-    }
+    private SbomGeneratorService sbomGeneratorService;
 
     @PostMapping("/from-repo")
     public ResponseEntity<String> generateSBOMFromRepo(@RequestBody RepoRequestDTO request) {
         String repoUrl = request.getRepoUrl();
-        String category = request.getCategory();
-        String deviceNameInput = request.getDeviceName();
+        String deviceName = request.getDeviceName();
         String manufacturer = request.getManufacturer();
+        String category = request.getCategory();
         String operatingSystem = request.getOperatingSystem();
         String osVersion = request.getOsVersion();
         String kernelVersion = request.getKernelVersion();
@@ -105,78 +87,28 @@ public class SbomController {
         try {
             tempDir = Files.createTempDirectory("repo-sbom");
 
-            // 1. Clone the GitHub repository
+            // 1. Clone the repo
             Process clone = new ProcessBuilder("git", "clone", repoUrl, tempDir.toString())
                     .inheritIO()
                     .start();
             clone.waitFor();
 
-            // 2. Search for dependency files
-            List<Path> dependencyFiles = Files.walk(tempDir)
-                    .filter(path -> {
-                        String name = path.getFileName().toString().toLowerCase();
-                        return
-                                // Node.js
-                                name.equals("package.json") ||
-                                        // Java (Maven/Gradle)
-                                        name.contains("pom") || name.contains("gradle") ||
-                                        // Python
-                                        name.contains("requirement") || name.contains("pipfile") || name.contains("setup") ||
-                                        // Go
-                                        name.equals("go.mod") ||
-                                        // PHP
-                                        name.equals("composer.json") ||
-                                        // Rust
-                                        name.equals("cargo.toml");
-                    })
-                    .collect(Collectors.toList());
-
-
-            if (dependencyFiles.isEmpty()) {
-                return ResponseEntity.badRequest().body("No supported dependency file found in repository.");
-            }
-
-            // 3. Create SBOM and Device FIRST
-            String hash = DigestUtils.sha256Hex(repoUrl);
-            String deviceName = (deviceNameInput != null && !deviceNameInput.isBlank())
-                    ? deviceNameInput
-                    : SbomService.extractRepoName(repoUrl);
-
-            Sbom newSbom = new Sbom("Manual", "N/A", "N/A", "N/A",
-                    LocalDateTime.now(), "GitHub", "Repo Upload", hash);
-            Sbom savedSbom = sbomRepository.save(newSbom);
-
-            Device newDevice = new Device(deviceName,
-                    manufacturer != null ? manufacturer : "Unknown",
+            // 2. Use common service
+            sbomGeneratorService.generateSbomAndDeviceFromDirectory(
+                    tempDir,
+                    deviceName != null ? deviceName : SbomService.extractRepoName(repoUrl),
                     category != null ? category : "Unknown",
+                    manufacturer,
                     operatingSystem != null ? operatingSystem : "Unknown OS",
                     osVersion != null ? osVersion : "Unknown Version",
                     kernelVersion != null ? kernelVersion : "Unknown Kernel",
-                    SbomService.extractDomain(repoUrl),
-                    savedSbom);
-            Device savedDevice = deviceRepository.save(newDevice);
-
-            // 4. Now parse dependency files
-            List<SoftwarePackage> allExtractedPackages = new ArrayList<>();
-
-            for (Path depFile : dependencyFiles) {
-                List<SoftwarePackage> extractedPackages = sbomService.extractPackagesFromDependencyFile(depFile, savedSbom, savedDevice);
-                allExtractedPackages.addAll(extractedPackages);
-            }
-
-            if (allExtractedPackages.isEmpty()) {
-                return ResponseEntity.badRequest().body("No dependencies found in detected files.");
-            }
-
-            // 5. Save extracted packages
-            for (SoftwarePackage pkg : allExtractedPackages) {
-                softwarePackageRepository.save(pkg);
-                sbomService.checkAndSaveVulnerabilities(pkg);
-            }
+                    "Repo Upload" // sourceType
+            );
 
             return ResponseEntity.ok("SBOM created successfully from repository!");
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         } finally {
             if (tempDir != null) {
@@ -193,6 +125,84 @@ public class SbomController {
     }
 
 
+    @PostMapping("/upload-source")
+    public ResponseEntity<?> uploadSourceZip(@RequestParam("file") MultipartFile file,
+                                             @RequestParam("category") String category,
+                                             @RequestParam(value = "deviceName", required = false) String deviceName,
+                                             @RequestParam(value = "manufacturer", required = false) String manufacturer,
+                                             @RequestParam(value = "operatingSystem", required = false) String operatingSystem,
+                                             @RequestParam(value = "osVersion", required = false) String osVersion,
+                                             @RequestParam(value = "kernelVersion", required = false) String kernelVersion) {
+        try {
+            // Save uploaded file properly
+            String filename = file.getOriginalFilename().toLowerCase();
+            Path tempFile = Files.createTempFile("upload-", filename.substring(filename.lastIndexOf('.')));
+            file.transferTo(tempFile.toFile()); // Save only once
+
+// Extract
+            Path extractedDir = Files.createTempDirectory("extracted-source");
+
+            if (filename.endsWith(".zip")) {
+                ArchiveUtils.unzip(tempFile.toFile().getAbsolutePath(), extractedDir.toString());
+            } else if (filename.endsWith(".tar.gz") || filename.endsWith(".tgz")) {
+                ArchiveUtils.extractTarGz(tempFile.toFile().getAbsolutePath(), extractedDir.toString());
+            } else if (filename.endsWith(".tar")) {
+                ArchiveUtils.extractTar(tempFile.toFile().getAbsolutePath(), extractedDir.toString());
+            } else {
+                throw new IllegalArgumentException("Unsupported file type: only .zip, .tar, .tar.gz supported");
+            }
+
+// 3. Use common service
+            SbomGenerationResult result = sbomGeneratorService.generateSbomAndDeviceFromDirectory(
+                    extractedDir,
+                    deviceName,
+                    category,
+                    manufacturer,
+                    operatingSystem,
+                    osVersion,
+                    kernelVersion,
+                    "Source Upload"
+            );
+            Device device = result.getDevice();
+            String version = result.getVersion();
+
+            return ResponseEntity.ok("SBOM and device uploaded successfully! Device ID: " + device.getId() + ", Version: " + version);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error processing uploaded source: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    @DeleteMapping("/{deviceId}")
+    public ResponseEntity<String> deleteDevice(@PathVariable Long deviceId) {
+        Optional<Device> deviceOpt = deviceRepository.findById(deviceId);
+        if (deviceOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Device device = deviceOpt.get();
+
+        // Fetch all SBOMs linked to this Device
+        Optional<Sbom> sbomOpt = sbomRepository.findByDevice(device);
+        if (sbomOpt.isPresent()) {
+            Sbom sbom = sbomOpt.get();
+            // 1. Delete Software Packages linked to this Device
+            softwarePackageRepository.deleteByDeviceId(deviceId);
+
+            // 2. Delete External References linked to this SBOM
+            externalReferenceRepository.deleteBySbom_Id(sbom.getId());
+
+            // 3. Delete the SBOM itself
+            sbomRepository.delete(sbom);
+        }
+
+        // 4. Finally delete the Device
+        deviceRepository.delete(device);
+
+        return ResponseEntity.ok("Device and all associated SBOMs deleted successfully!");
+    }
 
 
 

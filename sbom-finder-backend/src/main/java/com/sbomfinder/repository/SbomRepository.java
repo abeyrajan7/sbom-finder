@@ -1,6 +1,7 @@
 package com.sbomfinder.repository;
 
 import com.sbomfinder.model.Sbom;
+import com.sbomfinder.model.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,4 +13,6 @@ public interface SbomRepository extends JpaRepository<Sbom, Long> {
     Optional<Sbom> findByDeviceId(@Param("deviceId") Long deviceId);
     Optional<Sbom> findByDocumentNamespace(String documentNamespace);
     boolean existsByHash(String hash);
+    Optional<Sbom> findByDeviceAndVersion(Device device, String version);
+    Optional<Sbom> findByDevice(Device device);
 }

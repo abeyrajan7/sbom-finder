@@ -23,32 +23,33 @@ public class SoftwarePackage {
     @JoinColumn(name = "device_id")
     private Device device;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String name;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String version;
 
-    @Column
+    @Column(name="supplier", columnDefinition = "TEXT")
     private String supplier;
 
-    @Column(name = "download_location")
+    @Column(name = "download_location", columnDefinition = "TEXT")
     private String downloadLocation;
 
-    @Column(name = "license_declared")
+    @Column(name = "license_declared", columnDefinition = "TEXT")
     private String licenseDeclared;
 
-    @Column(name = "license_concluded")
+    @Column(name = "license_concluded", columnDefinition = "TEXT")
     private String licenseConcluded;
 
-    @Column(name = "copyright_text")
+    @Column(name = "copyright_text", columnDefinition = "TEXT")
     private String copyrightText;
 
-    @Column(name = "component_type") // New Field: OS, Kernel, or Application
+    @Column(name = "component_type", columnDefinition = "TEXT")
     private String componentType;
 
-    @Column(name = "purl") 
+    @Column(name = "purl", columnDefinition = "TEXT")
     private String purl;
+
 
     @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
     @JoinTable(

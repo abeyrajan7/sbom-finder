@@ -89,6 +89,12 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.24.0</version> <!-- latest stable as of 2024 -->
+    </dependency>
+
 
 
     <dependency>

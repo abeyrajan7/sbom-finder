@@ -171,7 +171,7 @@ public class DeviceController {
                      device.getOsVersion(),
                      device.getKernelVersion(),
                      device.getDigitalFootprint(),
-                     device.getSbom().getId(),
+                     (device.getSbom() != null ? device.getSbom().getId() : null),
                      device.getId(),
                      softwarePackageDTOs,
                      externalReferenceDTOs,
