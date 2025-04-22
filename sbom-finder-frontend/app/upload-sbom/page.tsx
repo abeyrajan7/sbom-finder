@@ -36,14 +36,15 @@ export default function UploadSBOMPage() {
 
     const formData = new FormData();
     if (uploadType === "archive") {
-    if (file) {
-      formData.append("file", file);
-      formData.append("category", category);
-      formData.append("deviceName", deviceName);
-      formData.append("manufacturer", manufacturer || "Unknown Manufacturer");
-      formData.append("operatingSystem", operatingSystem || "Unknown OS");
-      formData.append("osVersion", osVersion || "Unknown Version");
-      formData.append("kernelVersion", kernelVersion || "Unknown Kernel");
+        if (file) {
+        formData.append("file", file);
+        formData.append("category", category);
+        formData.append("deviceName", deviceName);
+        formData.append("manufacturer", manufacturer || "Unknown Manufacturer");
+        formData.append("operatingSystem", operatingSystem || "Unknown OS");
+        formData.append("osVersion", osVersion || "Unknown Version");
+        formData.append("kernelVersion", kernelVersion || "Unknown Kernel");
+        }
     }
 
     try {
