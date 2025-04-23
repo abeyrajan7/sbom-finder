@@ -9,6 +9,11 @@ type Props = {
   }) => void;
 };
 
+type AnalyticsItem = {
+  name: string;
+  sboms: number;
+};
+
 const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
     const BASE_URL = 'https://sbom-finder-backend.onrender.com';
 //   const BASE_URL = "http://localhost:8080";
@@ -21,16 +26,16 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
   useEffect(() => {
     fetch(`${BASE_URL}/api/analytics/manufacturers`)
       .then(res => res.json())
-      .then(data => {
-        const names = data.map((item: any) => item.name);
+      .then((data: AnalyticsItem[]) => {
+        const names = data.map(item => item.name);
         if (!names.includes("Unknown Manufacturer")) names.push("Unknown Manufacturer");
         setManufacturersList(names);
       });
 
     fetch(`${BASE_URL}/api/analytics/operating-systems`)
       .then(res => res.json())
-      .then(data => {
-        const names = data.map((item: any) => item.name);
+      .then((data: AnalyticsItem[]) => {
+        const names = data.map(item => item.name);
         if (!names.includes("Unknown OS")) names.push("Unknown OS");
         setOsList(names);
       });
