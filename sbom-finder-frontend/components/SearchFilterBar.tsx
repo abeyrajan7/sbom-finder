@@ -1,5 +1,4 @@
-'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './SearchFilterBar.css';
 
 type Props = {
@@ -11,9 +10,31 @@ type Props = {
 };
 
 const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
+    const BASE_URL = 'https://sbom-finder-backend.onrender.com';
+//   const BASE_URL = "http://localhost:8080";
   const [query, setQuery] = useState('');
   const [manufacturer, setManufacturer] = useState('');
   const [operatingSystem, setOperatingSystem] = useState('');
+  const [manufacturersList, setManufacturersList] = useState<string[]>([]);
+  const [osList, setOsList] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/api/analytics/manufacturers`)
+      .then(res => res.json())
+      .then(data => {
+        const names = data.map((item: any) => item.name);
+        if (!names.includes("Unknown Manufacturer")) names.push("Unknown Manufacturer");
+        setManufacturersList(names);
+      });
+
+    fetch(`${BASE_URL}/api/analytics/operating-systems`)
+      .then(res => res.json())
+      .then(data => {
+        const names = data.map((item: any) => item.name);
+        if (!names.includes("Unknown OS")) names.push("Unknown OS");
+        setOsList(names);
+      });
+  }, []);
 
   const handleSubmit = () => {
     onSearch({
@@ -22,8 +43,6 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
       operatingSystem: operatingSystem || '',
     });
   };
-
-
 
   return (
     <div className="search-filter-container">
@@ -34,28 +53,33 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
         onChange={(e) => setQuery(e.target.value)}
         className="search-input"
       />
+
       <select
         value={manufacturer}
         onChange={(e) => setManufacturer(e.target.value)}
         className="search-select"
       >
         <option value="">All Manufacturers</option>
-        <option value="Fitbit">Fitbit</option>
-        <option value="Apple">Apple</option>
-        <option value="Samsung">Samsung</option>
-        <option value="Google / AOSP">Google / AOSP</option>
+        {manufacturersList.map((manu, index) => (
+          <option key={index} value={manu}>
+            {manu}
+          </option>
+        ))}
       </select>
+
       <select
         value={operatingSystem}
         onChange={(e) => setOperatingSystem(e.target.value)}
         className="search-select"
       >
         <option value="">All Operating Systems</option>
-        <option value="Wear OS 4">Wear OS 4</option>
-        <option value="watchOS 10.3">watchOS 10.3</option>
-        <option value="Fitbit OS 5.2">Fitbit OS 5.2</option>
-        <option value="Android 15">Android 15</option>
+        {osList.map((os, index) => (
+          <option key={index} value={os}>
+            {os}
+          </option>
+        ))}
       </select>
+
       <button className="search-button" onClick={handleSubmit}>
         Search
       </button>

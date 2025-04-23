@@ -4,48 +4,44 @@ import React, { useState, useRef } from "react";
 import "./upload.css";
 
 export default function UploadSBOMPage() {
-  const BASE_URL = "https://sbom-finder-backend.onrender.com";
 //   const BASE_URL = "http://localhost:8080";
-  const [uploadType, setUploadType] = useState<"archive" | "repo">("archive");
+  const BASE_URL = 'https://sbom-finder-backend.onrender.com';
+  const [uploadType, setUploadType] = useState<"archive" | "dependency">("archive");
   const [file, setFile] = useState<File | null>(null);
-  const [repoUrl, setRepoUrl] = useState("");
   const [manufacturer, setManufacturer] = useState("");
   const [category, setCategory] = useState("");
   const [operatingSystem, setOperatingSystem] = useState("");
   const [osVersion, setOsVersion] = useState("");
   const [kernelVersion, setKernelVersion] = useState("");
+  const [deviceName, setDeviceName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [deviceName, setDeviceName] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async () => {
     setError(null);
 
-    if (uploadType === "archive" && !file) {
-      setError("Please select a Source to upload.");
+    if (!file) {
+      setError("Please select a file to upload.");
       return;
     }
-    if (uploadType === "repo" && !repoUrl) {
-      setError("Please enter a GitHub repo URL.");
+
+    if (!category || !deviceName) {
+      setError("Please fill all required fields.");
       return;
     }
 
     setLoading(true);
 
     const formData = new FormData();
-    if (uploadType === "archive") {
-        if (file) {
-        formData.append("file", file);
-        formData.append("category", category);
-        formData.append("deviceName", deviceName);
-        formData.append("manufacturer", manufacturer || "Unknown Manufacturer");
-        formData.append("operatingSystem", operatingSystem || "Unknown OS");
-        formData.append("osVersion", osVersion || "Unknown Version");
-        formData.append("kernelVersion", kernelVersion || "Unknown Kernel");
-        }
-    }
+    formData.append("file", file);
+    formData.append("category", category);
+    formData.append("deviceName", deviceName);
+    formData.append("manufacturer", manufacturer || "Unknown Manufacturer");
+    formData.append("operatingSystem", operatingSystem || "Unknown OS");
+    formData.append("osVersion", osVersion || "Unknown Version");
+    formData.append("kernelVersion", kernelVersion || "Unknown Kernel");
 
     try {
       let response;
@@ -55,20 +51,9 @@ export default function UploadSBOMPage() {
           body: formData,
         });
       } else {
-        const body = {
-          repoUrl,
-          category,
-          deviceName: deviceName,
-          manufacturer: manufacturer || "Unknown Manufacturer",
-          operatingSystem: operatingSystem || "Unknown OS",
-          osVersion: osVersion || "Unknown Version",
-          kernelVersion: kernelVersion || "Unknown Kernel",
-        };
-
-        response = await fetch(`${BASE_URL}/api/sboms/from-repo`, {
+        response = await fetch(`${BASE_URL}/api/sboms/upload-dependency`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+          body: formData,
         });
       }
 
@@ -90,11 +75,11 @@ export default function UploadSBOMPage() {
 
   const resetForm = () => {
     setFile(null);
-    setRepoUrl("");
     setManufacturer("");
     setOperatingSystem("");
     setOsVersion("");
     setKernelVersion("");
+    setDeviceName("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -105,7 +90,6 @@ export default function UploadSBOMPage() {
       <div className="upload-box">
         <h2 className="upload-title">Upload SBOM</h2>
 
-        {/* Upload Type Switch */}
         <div className="upload-type-toggle">
           <button
             className={uploadType === "archive" ? "active" : ""}
@@ -114,38 +98,28 @@ export default function UploadSBOMPage() {
             Upload Source Folder
           </button>
           <button
-            className={uploadType === "repo" ? "active" : ""}
-            onClick={() => setUploadType("repo")}
+            className={uploadType === "dependency" ? "active" : ""}
+            onClick={() => setUploadType("dependency")}
           >
-            Upload from GitHub Repo
+            Upload Dependency File
           </button>
         </div>
 
-
-        {uploadType === "archive" ? (
-          <>
-           <input
-             type="file"
-             ref={fileInputRef}
-             style={{ display: uploadType === "archive" ? "block" : "none" }}
-             accept=".zip,.tar,.tar.gz,.tgz"
-             onChange={(e) => setFile(e.target.files?.[0] || null)}
-             className="text-input"
-             key={uploadType} // ✅ very important to reset file input when type changes
-           />
-           <p style={{ fontSize: "0.8rem", color: "gray" }}>Accepted formats: .zip, .tar, .tar.gz, .tgz</p>
-          </>
-        ) : (
-          <>
-            <input
-              type="text"
-              placeholder="GitHub Repo URL"
-              className="text-input"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-            />
-          </>
-        )}
+        {/* File Input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: "block" }}
+          accept={uploadType === "archive" ? ".zip,.tar,.tar.gz,.tgz" : ".json,.xml,.txt"}
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          className="text-input"
+          key={uploadType} // Important to reset input when type changes
+        />
+        <p style={{ fontSize: "0.8rem", color: "gray" }}>
+          {uploadType === "archive"
+            ? "Accepted formats: .zip, .tar, .tar.gz, .tgz"
+            : "Accepted formats: .json, .xml, .txt"}
+        </p>
 
         {/* Common Fields */}
         <select
@@ -165,7 +139,7 @@ export default function UploadSBOMPage() {
           placeholder="Enter Device Name"
           value={deviceName}
           onChange={(e) => setDeviceName(e.target.value)}
-          className="text-input" // (use your CSS class or add)
+          className="text-input"
           required
         />
 
@@ -203,10 +177,8 @@ export default function UploadSBOMPage() {
           className="upload-button"
           onClick={handleUpload}
           disabled={
-              loading ||
-              (uploadType === "archive" && (!file || !category || !deviceName)) ||
-              (uploadType === "repo" && (!repoUrl || !category || !deviceName))
-            }
+            loading || !file || !category || !deviceName
+          }
         >
           {loading ? "Uploading..." : "Upload"}
         </button>
