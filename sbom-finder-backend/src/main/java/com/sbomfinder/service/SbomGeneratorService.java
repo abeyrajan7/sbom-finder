@@ -136,7 +136,7 @@ public class SbomGeneratorService {
         // 7. Extract packages from all dependency files
         List<SoftwarePackage> allPackages = new ArrayList<>();
         for (Path depFile : dependencyFiles) {
-            List<SoftwarePackage> extractedPackages = extractPackagesFromDependencyFile(depFile, sbom, device);
+            List<SoftwarePackage> extractedPackages = sbomService.extractPackagesFromDependencyFile(depFile, sbom, device);
             allPackages.addAll(extractedPackages);
         }
 
@@ -194,7 +194,7 @@ public class SbomGeneratorService {
         deviceRepository.save(device);
 
         // Extract packages
-        List<SoftwarePackage> packages = extractPackagesFromDependencyFile(dependencyFilePath, sbom, device);
+        List<SoftwarePackage> packages = sbomService.extractPackagesFromDependencyFile(dependencyFilePath, sbom, device);
 
         for (SoftwarePackage pkg : packages) {
             softwarePackageRepository.save(pkg);
@@ -203,110 +203,6 @@ public class SbomGeneratorService {
 
         return new SbomGenerationResult("Unknown Release", device);
     }
-
-
-    public List<SoftwarePackage> extractPackagesFromDependencyFile(Path filePath, Sbom sbom, Device device) throws IOException {
-        List<SoftwarePackage> packages = new ArrayList<>();
-        String fileName = filePath.getFileName().toString().toLowerCase();
-        String content = Files.readString(filePath);
-
-        if (fileName.endsWith(".json")) {
-            // Handle JSON-based dependency files
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(content);
-
-            if (root.has("dependencies")) {
-                JsonNode deps = root.get("dependencies");
-                deps.fields().forEachRemaining(entry -> {
-                    SoftwarePackage pkg = new SoftwarePackage();
-                    String name = entry.getKey();
-                    String version = entry.getValue().asText();
-
-                    pkg.setName(name);
-                    pkg.setVersion(version);
-                    pkg.setSbom(sbom);
-                    pkg.setDevice(device);
-
-                    String supplier = inferSupplierFromOsv(name, version);
-                    pkg.setSupplier(supplier);
-
-                    packages.add(pkg);
-                });
-            } else if (root.has("packages")) {
-                JsonNode packagesArray = root.get("packages");
-                for (JsonNode pkgNode : packagesArray) {
-                    SoftwarePackage pkg = new SoftwarePackage();
-                    String name = pkgNode.path("name").asText();
-                    String version = pkgNode.path("version").asText();
-                    pkg.setName(name);
-                    pkg.setVersion(version);
-                    pkg.setSbom(sbom);
-                    pkg.setDevice(device);
-                    String supplier = inferSupplierFromOsv(name, version);
-                    pkg.setSupplier(supplier);
-                    packages.add(pkg);
-                }
-            }
-        } else if (fileName.endsWith(".xml")) {
-            Pattern pattern = Pattern.compile("<dependency>.*?<groupId>(.*?)</groupId>.*?<artifactId>(.*?)</artifactId>.*?<version>(.*?)</version>.*?</dependency>", Pattern.DOTALL);
-            Matcher matcher = pattern.matcher(content);
-            while (matcher.find()) {
-                SoftwarePackage pkg = new SoftwarePackage();
-                String name = matcher.group(1) + ":" + matcher.group(2);
-                String version = matcher.group(3);
-                pkg.setName(name);
-                pkg.setVersion(version);
-                pkg.setSbom(sbom);
-                pkg.setDevice(device);
-                String supplier = inferSupplierFromOsv(name, version);
-                pkg.setSupplier(supplier);
-                packages.add(pkg);
-            }
-        } else if (fileName.endsWith(".txt")) {
-            List<String> lines = Files.readAllLines(filePath);
-            for (String line : lines) {
-                if (line.contains("==")) {
-                    String[] parts = line.split("==");
-                    if (parts.length == 2) {
-                        SoftwarePackage pkg = new SoftwarePackage();
-                        String name = parts[0].trim();
-                        String version = parts[1].trim();
-                        pkg.setName(name);
-                        pkg.setVersion(version);
-                        pkg.setSbom(sbom);
-                        pkg.setDevice(device);
-                        String supplier = inferSupplierFromOsv(name, version);
-                        pkg.setSupplier(supplier);
-                        packages.add(pkg);
-                    }
-                }
-            }
-        } else if (fileName.endsWith(".gradle")) {
-            List<String> lines = Files.readAllLines(filePath);
-            for (String line : lines) {
-                if (line.contains("implementation") && line.contains(":")) {
-                    String[] parts = line.split(":");
-                    if (parts.length >= 3) {
-                        SoftwarePackage pkg = new SoftwarePackage();
-                        String name = parts[1].replaceAll("\"|'", "").trim();
-                        String version = parts[2].replaceAll("\"|'", "").trim();
-                        pkg.setName(name);
-                        pkg.setVersion(version);
-                        pkg.setSbom(sbom);
-                        pkg.setDevice(device);
-                        String supplier = inferSupplierFromOsv(name, version);
-                        pkg.setSupplier(supplier);
-                        packages.add(pkg);
-                    }
-                }
-            }
-        } else {
-            System.out.println("Unsupported file format: " + fileName);
-        }
-
-        return packages;
-    }
-
 
     private String computeNormalizedSHA256(Path file) throws IOException, NoSuchAlgorithmException {
             // Normalize content
@@ -319,10 +215,6 @@ public class SbomGeneratorService {
             byte[] hashBytes = digest.digest(normalizedContent.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hashBytes);
         }
-
-
-
-
 
     private String inferSupplierFromNamespace(String name) {
         Map<String, String> knownSuppliers = Map.ofEntries(

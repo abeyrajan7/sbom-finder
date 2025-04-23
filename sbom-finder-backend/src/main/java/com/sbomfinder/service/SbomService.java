@@ -80,7 +80,6 @@ public class SbomService {
         packageMap.put("ecosystem", ecosystem);
         payload.put("package", packageMap);
         payload.put("version", version);
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -132,6 +131,7 @@ public class SbomService {
                     v.setSeverity(severityText);
                     v.setSourceUrl(sourceUrl);
                     v.setCvssScore(score);
+                    v.setSeverityLevel(calculateSeverityLevel(score));
 
                     vulnerabilities.add(v);
                 }
@@ -143,6 +143,15 @@ public class SbomService {
             System.err.println("Error calling OSV API for " + name + "@" + version + ": " + e.getMessage());
             return Collections.emptyList();
         }
+    }
+
+    private String calculateSeverityLevel(Double score) {
+        if (score == null) return "Unknown";
+        if (score == 0.0) return "None";
+        if (score <= 3.9) return "Low";
+        if (score <= 6.9) return "Medium";
+        if (score <= 8.9) return "High";
+        return "Critical";
     }
 
 
@@ -163,6 +172,7 @@ public class SbomService {
         // Link and save again
         softwarePackage.setVulnerabilities(linkedVulns);
         softwarePackageRepository.save(softwarePackage);
+
     }
 
     private String extractNameFromPurl(String purl, String fallbackName) {
@@ -278,6 +288,7 @@ public class SbomService {
                       sp.setPurl(generatePurl("pypi", sp.getName(), sp.getVersion()));
                       packages.add(sp);
                   });
+
         } else if (fileName.contains("setup")) {
             // Python setup.py
             Matcher matcher = Pattern.compile("'([^']+)==([^']+)'").matcher(content);

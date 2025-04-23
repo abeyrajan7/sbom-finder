@@ -64,10 +64,7 @@ public class SbomController {
             Path extractedDir = Files.createTempDirectory("extracted-source");
             String fileExtension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
 
-            if (fileExtension.equals(".json")) {
-
-            }
-            else if (filename.endsWith(".zip")) {
+            if (filename.endsWith(".zip")) {
                 ArchiveUtils.unzip(tempFile.toFile().getAbsolutePath(), extractedDir.toString());
             } else if (filename.endsWith(".tar.gz") || filename.endsWith(".tgz")) {
                 ArchiveUtils.extractTarGz(tempFile.toFile().getAbsolutePath(), extractedDir.toString());
