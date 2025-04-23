@@ -463,8 +463,4 @@ public class DeviceController {
             return ResponseEntity.status(500).body(null);
         }
     }
-
-
-
-
 }

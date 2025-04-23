@@ -15,4 +15,5 @@ public interface SbomRepository extends JpaRepository<Sbom, Long> {
     boolean existsByHash(String hash);
     Optional<Sbom> findByDeviceAndVersion(Device device, String version);
     Optional<Sbom> findByDevice(Device device);
+    Optional<Sbom> findByHash(String hash);
 }

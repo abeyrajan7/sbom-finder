@@ -12,6 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
             .allowedOrigins(
                 "https://sbom-finder-clean.vercel.app",
+                "https://sbom-finder-clean-git-main-abeys-projects.vercel.app",
                 "http://localhost:3000"
             )
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
