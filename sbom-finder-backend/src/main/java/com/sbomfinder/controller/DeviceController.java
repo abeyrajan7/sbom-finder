@@ -2,7 +2,10 @@ package com.sbomfinder.controller;
 
 import com.sbomfinder.dto.*;
 import com.sbomfinder.model.Device;
+import com.sbomfinder.model.SbomArchive;
 import com.sbomfinder.repository.DeviceRepository;
+import com.sbomfinder.repository.SbomArchiveRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.sbomfinder.model.SoftwarePackage;
@@ -20,6 +23,7 @@ import com.sbomfinder.dto.DeviceDetailsDTO;
 import com.sbomfinder.dto.VulnerabilityDTO;
 import com.sbomfinder.service.DeviceService;
 import com.sbomfinder.service.VulnerabilityService;
+import com.sbomfinder.service.SbomArchiveService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.core.io.ByteArrayResource;
@@ -48,7 +52,13 @@ public class DeviceController {
     private SoftwarePackageRepository softwarePackageRepository;
 
     @Autowired
+    private SbomArchiveRepository sbomArchiveRepository;
+
+    @Autowired
     private DeviceService deviceService;
+
+    @Autowired
+    private SbomArchiveService sbomArchiveService;
 
     @Autowired
     private VulnerabilityService vulnerabilityService;
@@ -71,11 +81,8 @@ public class DeviceController {
 
             // 1. Fetch Software Packages
             List<SoftwarePackage> softwarePackages = softwarePackageRepository.findByDeviceId(device.getId());
-            System.out.println("Count of packages: " + softwarePackages.size());
             List<SoftwarePackageDTO> softwarePackageDTOs = softwarePackages.stream().map(pkg -> {
                 List<VulnerabilityDTO> vulns = vulnerabilityService.getVulnerabilitiesByPackageId(pkg.getId());
-                System.out.println("Checking package: " + pkg.getName() + " ID: " + pkg.getId());
-                System.out.println("Vulns found: " + vulns.size());
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
@@ -197,11 +204,8 @@ public class DeviceController {
 
         // Map device 1's packages to DTOs with their vulnerabilities
             List<SoftwarePackage> softwarePackages1 = softwarePackageRepository.findByDeviceId(device1.getId());
-            System.out.println("Count of packages: " + softwarePackages1.size());
             List<SoftwarePackageDTO> softwarePackageDTOs1 = softwarePackages1.stream().map(pkg -> {
                 List<VulnerabilityDTO> vulns = vulnerabilityService.getVulnerabilitiesByPackageId(pkg.getId());
-                System.out.println("Checking package: " + pkg.getName() + " ID: " + pkg.getId());
-                System.out.println("Vulns found: " + vulns.size());
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
@@ -213,11 +217,8 @@ public class DeviceController {
 
         // Device 2 packages with vulnerabilities
             List<SoftwarePackage> softwarePackages2 = softwarePackageRepository.findByDeviceId(device2.getId());
-            System.out.println("Count of packages: " + softwarePackages2.size());
             List<SoftwarePackageDTO> softwarePackageDTOs2 = softwarePackages2.stream().map(pkg -> {
                 List<VulnerabilityDTO> vulns = vulnerabilityService.getVulnerabilitiesByPackageId(pkg.getId());
-                System.out.println("Checking package: " + pkg.getName() + " ID: " + pkg.getId());
-                System.out.println("Vulns found: " + vulns.size());
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
@@ -351,116 +352,272 @@ public class DeviceController {
         return ResponseEntity.ok(deviceDetailsList);
     }
 
-    //download the sbom of device
-    @GetMapping("/download/{deviceId}")
-    public ResponseEntity<Resource> downloadSbom(
-            @PathVariable Long deviceId,
+
+
+//    //download the sbom of device
+@GetMapping("/download/{deviceId}")
+public ResponseEntity<Resource> downloadArchivedSbom(
+        @PathVariable Long deviceId,
+        @RequestParam(name = "format", defaultValue = "cyclonedx") String format
+) {
+    try {
+        Optional<SbomArchive> optionalArchive = sbomArchiveRepository.findTopByDeviceIdAndIsLatestTrue(deviceId);
+        if (optionalArchive.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        SbomArchive archive = optionalArchive.get();
+        String unifiedJson = archive.getSbomContent();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        UnifiedSbomData sbomData = objectMapper.readValue(unifiedJson, UnifiedSbomData.class);
+
+        String outputJson;
+
+        if (format.equalsIgnoreCase("cyclonedx")) {
+            outputJson = sbomArchiveService.generateCycloneDxJson(sbomData);
+        } else if (format.equalsIgnoreCase("spdx")) {
+            outputJson = sbomArchiveService.generateSpdxJson(sbomData);
+        } else {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        byte[] jsonBytes = outputJson.getBytes(StandardCharsets.UTF_8);
+        ByteArrayResource resource = new ByteArrayResource(jsonBytes);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sbom_device_" + deviceId + "." + format.toLowerCase() + ".json")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(jsonBytes.length)
+                .body(resource);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+}
+
+    @GetMapping("/archives/all")
+    public ResponseEntity<?> getAllDeviceArchives() {
+        List<Device> allDevices = deviceRepository.findAll();
+
+        List<Map<String, Object>> deviceArchiveList = allDevices.stream()
+                .map(device -> {
+                    List<SbomArchive> archives = sbomArchiveRepository.findAllByDeviceId(device.getId());
+                    if (archives.isEmpty()) return null;  // Skip devices with no archives
+
+                    List<Map<String, Object>> archiveList = archives.stream().map(archive -> {
+                        Map<String, Object> archiveMap = new HashMap<>();
+                        archiveMap.put("name", "Version - " + archive.getVersion());
+                        archiveMap.put("archiveId", archive.getId());
+                        archiveMap.put("isLatest", archive.getIsLatest());
+                        return archiveMap;
+                    }).collect(Collectors.toList());
+
+                    Map<String, Object> deviceMap = new HashMap<>();
+                    deviceMap.put("deviceName", device.getDeviceName());
+                    deviceMap.put("archives", archiveList);
+                    return deviceMap;
+                })
+                .filter(Objects::nonNull) // Only include devices with archives
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(deviceArchiveList);
+    }
+
+    @GetMapping("/download/archive/{archiveId}")
+    public ResponseEntity<Resource> downloadArchivedSbomById(
+            @PathVariable Long archiveId,
             @RequestParam(name = "format", defaultValue = "cyclonedx") String format
     ) {
         try {
-            Optional<Device> optionalDevice = deviceRepository.findById(deviceId);
-
-            if (optionalDevice.isEmpty()) {
-                return ResponseEntity.status(404).body(null);
+            Optional<SbomArchive> optionalArchive = sbomArchiveRepository.findById(archiveId);
+            if (optionalArchive.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
-            Device device = optionalDevice.get();
-
-            List<SoftwarePackage> softwarePackages = softwarePackageRepository.findByDeviceId(device.getId());
+            SbomArchive archive = optionalArchive.get();
+            String unifiedJson = archive.getSbomContent();
 
             ObjectMapper objectMapper = new ObjectMapper();
-            String jsonContent;
+            UnifiedSbomData sbomData = objectMapper.readValue(unifiedJson, UnifiedSbomData.class);
+
+            String outputJson;
 
             if (format.equalsIgnoreCase("cyclonedx")) {
-                // Build CycloneDX format
-                Map<String, Object> sbom = new LinkedHashMap<>();
-                sbom.put("bomFormat", "CycloneDX");
-                sbom.put("specVersion", "1.4");
-                sbom.put("version", 1);
-
-                // Components section
-                List<Map<String, Object>> components = softwarePackages.stream()
-                        .map(pkg -> {
-                            Map<String, Object> component = new LinkedHashMap<>();
-                            component.put("type", "library");
-                            component.put("name", pkg.getName());
-                            component.put("version", pkg.getVersion());
-                            component.put("purl", pkg.getPurl() != null ? pkg.getPurl() : "NOASSERTION");
-                            return component;
-                        })
-                        .collect(Collectors.toList());
-
-                sbom.put("components", components);
-
-                // Vulnerabilities section
-                List<Map<String, Object>> vulnerabilities = new ArrayList<>();
-
-                for (SoftwarePackage pkg : softwarePackages) {
-                    if (pkg.getVulnerabilities() != null && !pkg.getVulnerabilities().isEmpty()) {
-                        for (Vulnerability vuln : pkg.getVulnerabilities()) {
-                            Map<String, Object> vulnMap = new LinkedHashMap<>();
-                            vulnMap.put("id", vuln.getCveId());
-                            vulnMap.put("source", Map.of("name", "NVD"));
-
-                            Map<String, Object> rating = new LinkedHashMap<>();
-                            rating.put("score", vuln.getCvssScore() != null ? vuln.getCvssScore() : 0.0);
-                            rating.put("severity", vuln.getSeverity() != null ? vuln.getSeverity() : "UNKNOWN");
-                            rating.put("method", "CVSSv3");
-                            rating.put("vector", "NOASSERTION");
-                            vulnMap.put("ratings", List.of(rating));
-                            vulnMap.put("affects", List.of(
-                                    Map.of("ref", pkg.getPurl() != null ? pkg.getPurl() : pkg.getName())
-                            ));
-
-                            vulnerabilities.add(vulnMap);
-                        }
-                    }
-                }
-
-                if (!vulnerabilities.isEmpty()) {
-                    sbom.put("vulnerabilities", vulnerabilities);
-                }
-
-                jsonContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(sbom);
-
+                outputJson = sbomArchiveService.generateCycloneDxJson(sbomData);
             } else if (format.equalsIgnoreCase("spdx")) {
-                // Build SPDX format (no vulnerabilities)
-                Map<String, Object> sbom = new LinkedHashMap<>();
-                sbom.put("spdxVersion", "SPDX-2.2");
-                sbom.put("SPDXID", "SPDXRef-DOCUMENT");
-                sbom.put("name", device.getDeviceName() != null ? device.getDeviceName() : "UnknownDevice");
-
-                List<Map<String, Object>> packages = softwarePackages.stream()
-                        .map(pkg -> {
-                            Map<String, Object> spdxPackage = new LinkedHashMap<>();
-                            spdxPackage.put("SPDXID", "SPDXRef-Package-" + pkg.getName().replaceAll("[^a-zA-Z0-9]", ""));
-                            spdxPackage.put("name", pkg.getName());
-                            spdxPackage.put("versionInfo", pkg.getVersion() != null ? pkg.getVersion() : "NOASSERTION");
-                            spdxPackage.put("downloadLocation", "NOASSERTION");
-                            return spdxPackage;
-                        })
-                        .collect(Collectors.toList());
-
-                sbom.put("packages", packages);
-
-                jsonContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(sbom);
-
+                outputJson = sbomArchiveService.generateSpdxJson(sbomData);
             } else {
                 return ResponseEntity.badRequest().body(null);
             }
 
-            // Create downloadable file
-            byte[] jsonBytes = jsonContent.getBytes(StandardCharsets.UTF_8);
+            byte[] jsonBytes = outputJson.getBytes(StandardCharsets.UTF_8);
             ByteArrayResource resource = new ByteArrayResource(jsonBytes);
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sbom_device_" + deviceId + ".json")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sbom_archive_" + archiveId + "." + format.toLowerCase() + ".json")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .contentLength(jsonBytes.length)
                     .body(resource);
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @GetMapping("/download/{deviceId}/latest")
+    public ResponseEntity<Resource> downloadLatestSbom(
+            @PathVariable Long deviceId,
+            @RequestParam(name="format", defaultValue = "cyclonedx") String format
+    )
+    {
+        try {
+            Optional<SbomArchive> optionalArchive = sbomArchiveRepository.findTopByDeviceIdAndIsLatestTrue(deviceId);
+            if (optionalArchive.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            String unifiedJson = optionalArchive.get().getSbomContent();
+            ObjectMapper objectMapper = new ObjectMapper();
+            UnifiedSbomData sbomData = objectMapper.readValue(unifiedJson, UnifiedSbomData.class);
+
+            String outputJson;
+            if (format.equalsIgnoreCase("cyclonedx")) {
+                outputJson = sbomArchiveService.generateCycloneDxJson(sbomData);
+            } else if (format.equalsIgnoreCase("spdx")) {
+                outputJson = sbomArchiveService.generateSpdxJson(sbomData);
+            } else {
+                return ResponseEntity.badRequest().body(null);
+            }
+
+            byte[] jsonBytes = outputJson.getBytes(StandardCharsets.UTF_8);
+            ByteArrayResource resource = new ByteArrayResource(jsonBytes);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=latest_sbom_device_" + deviceId + "." + format + ".json")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentLength(jsonBytes.length)
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+
+
+//    @GetMapping("/download/{deviceId}")
+//    public ResponseEntity<Resource> downloadSbom(
+//            @PathVariable Long deviceId,
+//            @RequestParam(name = "format", defaultValue = "cyclonedx") String format
+//    ) {
+//        try {
+//            Optional<Device> optionalDevice = deviceRepository.findById(deviceId);
+//
+//            if (optionalDevice.isEmpty()) {
+//                return ResponseEntity.status(404).body(null);
+//            }
+//
+//            Device device = optionalDevice.get();
+//
+//            List<SoftwarePackage> softwarePackages = softwarePackageRepository.findByDeviceId(device.getId());
+//
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            String jsonContent;
+//
+//            if (format.equalsIgnoreCase("cyclonedx")) {
+//                // Build CycloneDX format
+//                Map<String, Object> sbom = new LinkedHashMap<>();
+//                sbom.put("bomFormat", "CycloneDX");
+//                sbom.put("specVersion", "1.4");
+//                sbom.put("version", 1);
+//
+//                // Components section
+//                List<Map<String, Object>> components = softwarePackages.stream()
+//                        .map(pkg -> {
+//                            Map<String, Object> component = new LinkedHashMap<>();
+//                            component.put("type", "library");
+//                            component.put("name", pkg.getName());
+//                            component.put("version", pkg.getVersion());
+//                            component.put("purl", pkg.getPurl() != null ? pkg.getPurl() : "NOASSERTION");
+//                            return component;
+//                        })
+//                        .collect(Collectors.toList());
+//
+//                sbom.put("components", components);
+//
+//                // Vulnerabilities section
+//                List<Map<String, Object>> vulnerabilities = new ArrayList<>();
+//
+//                for (SoftwarePackage pkg : softwarePackages) {
+//                    if (pkg.getVulnerabilities() != null && !pkg.getVulnerabilities().isEmpty()) {
+//                        for (Vulnerability vuln : pkg.getVulnerabilities()) {
+//                            Map<String, Object> vulnMap = new LinkedHashMap<>();
+//                            vulnMap.put("id", vuln.getCveId());
+//                            vulnMap.put("source", Map.of("name", "NVD"));
+//
+//                            Map<String, Object> rating = new LinkedHashMap<>();
+//                            rating.put("score", vuln.getCvssScore() != null ? vuln.getCvssScore() : 0.0);
+//                            rating.put("severity", vuln.getSeverity() != null ? vuln.getSeverity() : "UNKNOWN");
+//                            rating.put("method", "CVSSv3");
+//                            rating.put("vector", "NOASSERTION");
+//                            vulnMap.put("ratings", List.of(rating));
+//                            vulnMap.put("affects", List.of(
+//                                    Map.of("ref", pkg.getPurl() != null ? pkg.getPurl() : pkg.getName())
+//                            ));
+//
+//                            vulnerabilities.add(vulnMap);
+//                        }
+//                    }
+//                }
+//
+//                if (!vulnerabilities.isEmpty()) {
+//                    sbom.put("vulnerabilities", vulnerabilities);
+//                }
+//
+//                jsonContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(sbom);
+//
+//            } else if (format.equalsIgnoreCase("spdx")) {
+//                // Build SPDX format (no vulnerabilities)
+//                Map<String, Object> sbom = new LinkedHashMap<>();
+//                sbom.put("spdxVersion", "SPDX-2.2");
+//                sbom.put("SPDXID", "SPDXRef-DOCUMENT");
+//                sbom.put("name", device.getDeviceName() != null ? device.getDeviceName() : "UnknownDevice");
+//
+//                List<Map<String, Object>> packages = softwarePackages.stream()
+//                        .map(pkg -> {
+//                            Map<String, Object> spdxPackage = new LinkedHashMap<>();
+//                            spdxPackage.put("SPDXID", "SPDXRef-Package-" + pkg.getName().replaceAll("[^a-zA-Z0-9]", ""));
+//                            spdxPackage.put("name", pkg.getName());
+//                            spdxPackage.put("versionInfo", pkg.getVersion() != null ? pkg.getVersion() : "NOASSERTION");
+//                            spdxPackage.put("downloadLocation", "NOASSERTION");
+//                            return spdxPackage;
+//                        })
+//                        .collect(Collectors.toList());
+//
+//                sbom.put("packages", packages);
+//
+//                jsonContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(sbom);
+//
+//            } else {
+//                return ResponseEntity.badRequest().body(null);
+//            }
+//
+//            // Create downloadable file
+//            byte[] jsonBytes = jsonContent.getBytes(StandardCharsets.UTF_8);
+//            ByteArrayResource resource = new ByteArrayResource(jsonBytes);
+//
+//            return ResponseEntity.ok()
+//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sbom_device_" + deviceId + ".json")
+//                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                    .contentLength(jsonBytes.length)
+//                    .body(resource);
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.status(500).body(null);
+//        }
+//    }
 }

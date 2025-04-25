@@ -19,7 +19,7 @@ public class SoftwarePackage {
     @JoinColumn(name = "sbom_id", nullable = false)
     private Sbom sbom;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id")
     private Device device;
 

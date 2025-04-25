@@ -11,6 +11,10 @@ import com.sbomfinder.repository.SoftwarePackageRepository;
 import com.sbomfinder.util.GitHubReleaseFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.sbomfinder.model.SbomArchive;
+import com.sbomfinder.repository.SbomArchiveRepository;
+import com.sbomfinder.repository.ExternalReferenceRepository;
 
 import java.io.IOException;
 import java.net.URI;
@@ -45,6 +49,14 @@ public class SbomGeneratorService {
     @Autowired
     private SbomService sbomService;
 
+    @Autowired
+    private SbomArchiveRepository sbomArchiveRepository;
+
+    @Autowired
+    private ExternalReferenceRepository externalReferenceRepository;
+
+    @Autowired
+    private SbomArchiveService sbomArchiveService;
 
     public SbomGenerationResult generateSbomAndDeviceFromDirectory(
             Path extractedDir,
@@ -274,6 +286,51 @@ public class SbomGeneratorService {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(normalizedContent.getBytes(StandardCharsets.UTF_8));
         return Base64.getEncoder().encodeToString(hashBytes);
+    }
+
+    //update the sbom
+    @Transactional
+    public void uploadUpdatedSbom(Device device, Sbom newSbom, List<SoftwarePackage> newPackages) {
+        Long deviceId = device.getId();
+
+        // 1. Mark existing SBOM archives as not latest
+        List<SbomArchive> existingArchives = sbomArchiveRepository.findAllByDeviceId(deviceId);
+        for (SbomArchive archive : existingArchives) {
+            archive.setIsLatest(false);
+            sbomArchiveRepository.save(archive);
+        }
+
+        // 2. Delete old SBOM and associated data
+        Optional<Sbom> existingSbomOpt = sbomRepository.findByDeviceId(deviceId);
+        if (existingSbomOpt.isPresent()) {
+            Sbom oldSbom = existingSbomOpt.get();
+            externalReferenceRepository.deleteBySbom_Id(oldSbom.getId());
+            softwarePackageRepository.deleteByDeviceId(deviceId);
+            sbomRepository.delete(oldSbom);
+        }
+
+        // 3. Save the new SBOM and its packages
+        newSbom.setDevice(device);
+        Sbom savedSbom = sbomRepository.save(newSbom);
+
+        for (SoftwarePackage pkg : newPackages) {
+            pkg.setDevice(device);
+            pkg.setSbom(savedSbom);
+        }
+        softwarePackageRepository.saveAll(newPackages);
+
+        // 4. Archive the new SBOM
+        try {
+            String jsonContent = sbomArchiveService.generateJsonSbomContent(device, savedSbom, newPackages);
+            SbomArchive newArchive = new SbomArchive();
+            newArchive.setDevice(device);
+            newArchive.setVersion(savedSbom.getVersion());
+            newArchive.setSbomContent(jsonContent);
+            newArchive.setIsLatest(true);
+            sbomArchiveRepository.save(newArchive);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate SBOM JSON content", e);
+        }
     }
 
 }

@@ -1,6 +1,8 @@
 package com.sbomfinder.model;
 
 import jakarta.persistence.*;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "devices")
@@ -35,6 +37,9 @@ public class Device {
     @Column(name = "digital_footprint", length = 500)
     private String digitalFootprint;
 
+    @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<SoftwarePackage> packages = new ArrayList<>();
+
     public Device() {}
 
     public Device(String deviceName, String manufacturer, String category,
@@ -59,6 +64,10 @@ public class Device {
     public String getKernelVersion() { return kernelVersion; }
     public String getDigitalFootprint() { return digitalFootprint; }
     public Sbom getSbom() { return sbom; }
+    public List<SoftwarePackage> getPackages() {
+        return packages;
+    }
+
 
     // ✅ Setters
     public void setId(Long id) { this.id = id; }
@@ -70,4 +79,7 @@ public class Device {
     public void setKernelVersion(String kernelVersion) { this.kernelVersion = kernelVersion; }
     public void setDigitalFootprint(String digitalFootprint) { this.digitalFootprint = digitalFootprint; }
     public void setSbom(Sbom sbom) { this.sbom = sbom; }
+    public void setPackages(List<SoftwarePackage> packages) {
+        this.packages = packages;
+    }
 }

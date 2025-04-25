@@ -9,8 +9,10 @@ import com.sbomfinder.repository.DeviceRepository;
 import com.sbomfinder.repository.ExternalReferenceRepository;
 import com.sbomfinder.repository.SbomRepository;
 import com.sbomfinder.repository.SoftwarePackageRepository;
+import com.sbomfinder.repository.SbomArchiveRepository;
 import com.sbomfinder.service.SbomGenerationResult;
 import com.sbomfinder.service.SbomGeneratorService;
+import com.sbomfinder.service.SbomArchiveService;
 import com.sbomfinder.util.ArchiveUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +46,13 @@ public class SbomController {
     private ExternalReferenceRepository externalReferenceRepository;
 
     @Autowired
+    private SbomArchiveRepository  sbomArchiveRepository;
+
+    @Autowired
     private SbomGeneratorService sbomGeneratorService;
+
+    @Autowired
+    private SbomArchiveService sbomArchiveService;
 
     @PostMapping("/upload-source")
     public ResponseEntity<?> uploadSourceZip(@RequestParam("file") MultipartFile file,
@@ -87,6 +95,16 @@ public class SbomController {
             );
             Device device = result.getDevice();
             String version = result.getVersion();
+            Sbom sbom = device.getSbom();
+
+            //save SBOM in Archive
+            Optional<Device> optionalDevice = deviceRepository.findById(device.getId());
+            if (optionalDevice.isEmpty()) {
+                return ResponseEntity.status(404).body(null);
+            }
+            Device archDevice = optionalDevice.get();
+            List<SoftwarePackage> archSoftwarePackages = softwarePackageRepository.findByDeviceId(archDevice.getId());
+            sbomArchiveService.saveToArchive(sbom, archDevice, version, archSoftwarePackages);
 
             return ResponseEntity.ok("SBOM and device uploaded successfully! Device ID: " + device.getId() + ", Version: " + version);
 
@@ -116,7 +134,10 @@ public class SbomController {
             // 2. Delete External References linked to this SBOM
             externalReferenceRepository.deleteBySbom_Id(sbom.getId());
 
-            // 3. Delete the SBOM itself
+            // 3. Delete Archive entries for this Device
+            sbomArchiveRepository.deleteByDeviceId(deviceId);
+
+            // 4. Delete the SBOM itself
             sbomRepository.delete(sbom);
         }
 
@@ -125,7 +146,6 @@ public class SbomController {
 
         return ResponseEntity.ok("Device and all associated SBOMs deleted successfully!");
     }
-
 
     @PostMapping("/upload-dependency")
     public ResponseEntity<?> uploadDependencyFile(@RequestParam("file") MultipartFile file,
@@ -143,8 +163,8 @@ public class SbomController {
             SbomGenerationResult result = sbomGeneratorService.generateSbomAndDeviceFromDependencyFile(
                     tempFile,
                     deviceName,
-                    manufacturer,
                     category,
+                    manufacturer,
                     operatingSystem,
                     osVersion,
                     kernelVersion
