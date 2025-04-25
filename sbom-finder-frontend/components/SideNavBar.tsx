@@ -12,6 +12,7 @@ export default function SideNavBar() {
       { label: "Upload SBOM", path: "/upload-sbom" },
       { label: "SBOM List", path: "/sbom-list" },
       { label: "Compare SBOMs", path: "/compare-sboms" },
+      { label: "SBOM Archives", path: "/device-sbom-archive" },
       { label: "Analytics", path: "/analytics" },
     ];
 

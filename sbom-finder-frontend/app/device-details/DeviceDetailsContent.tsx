@@ -41,8 +41,8 @@ export default function DeviceDetailsContent() {
   const device_id = searchParams.get("device_id");
   const [deviceDetails, setDeviceDetails] = useState<DeviceDetail | null>(null);
   const router = useRouter();
-  const BASE_URL = "https://sbom-finder-backend.onrender.com";
-//   const BASE_URL = "http://localhost:8080";
+//   const BASE_URL = "https://sbom-finder-backend.onrender.com";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
   const [openSections, setOpenSections] = useState({
     info: true,

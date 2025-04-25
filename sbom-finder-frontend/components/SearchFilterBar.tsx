@@ -15,8 +15,8 @@ type AnalyticsItem = {
 };
 
 const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
-    const BASE_URL = 'https://sbom-finder-backend.onrender.com';
-//   const BASE_URL = "http://localhost:8080";
+//     const BASE_URL = 'https://sbom-finder-backend.onrender.com';
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const [query, setQuery] = useState('');
   const [manufacturer, setManufacturer] = useState('');
   const [operatingSystem, setOperatingSystem] = useState('');
