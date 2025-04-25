@@ -11,6 +11,7 @@ import com.sbomfinder.repository.SbomRepository;
 import com.sbomfinder.repository.SoftwarePackageRepository;
 import com.sbomfinder.repository.SbomArchiveRepository;
 import com.sbomfinder.service.SbomGenerationResult;
+import com.sbomfinder.service.ExternalReferenceService;
 import com.sbomfinder.service.SbomGeneratorService;
 import com.sbomfinder.service.SbomArchiveService;
 import com.sbomfinder.util.ArchiveUtils;
@@ -54,6 +55,9 @@ public class SbomController {
     @Autowired
     private SbomArchiveService sbomArchiveService;
 
+    @Autowired
+    private ExternalReferenceService externalReferenceService;
+
     @PostMapping("/upload-source")
     public ResponseEntity<?> uploadSourceZip(@RequestParam("file") MultipartFile file,
                                              @RequestParam("category") String category,
@@ -93,6 +97,7 @@ public class SbomController {
                     kernelVersion != null ? kernelVersion : "Unknown Kernel",
                     "Source Upload"
             );
+
             Device device = result.getDevice();
             String version = result.getVersion();
             Sbom sbom = device.getSbom();
@@ -105,6 +110,9 @@ public class SbomController {
             Device archDevice = optionalDevice.get();
             List<SoftwarePackage> archSoftwarePackages = softwarePackageRepository.findByDeviceId(archDevice.getId());
             sbomArchiveService.saveToArchive(sbom, archDevice, version, archSoftwarePackages);
+            //save external references
+            List<String> extractedLinks = externalReferenceService.extractExternalReferences(extractedDir);
+            externalReferenceService.saveExternalReferences(sbom, extractedLinks);
 
             return ResponseEntity.ok("SBOM and device uploaded successfully! Device ID: " + device.getId() + ", Version: " + version);
 

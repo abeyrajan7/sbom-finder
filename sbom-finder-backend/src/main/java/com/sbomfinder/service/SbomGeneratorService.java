@@ -6,6 +6,7 @@ import com.sbomfinder.model.Device;
 import com.sbomfinder.model.Sbom;
 import com.sbomfinder.model.SoftwarePackage;
 import com.sbomfinder.repository.DeviceRepository;
+import com.sbomfinder.service.DigitalFootprintService;
 import com.sbomfinder.repository.SbomRepository;
 import com.sbomfinder.repository.SoftwarePackageRepository;
 import com.sbomfinder.util.GitHubReleaseFetcher;
@@ -57,6 +58,12 @@ public class SbomGeneratorService {
 
     @Autowired
     private SbomArchiveService sbomArchiveService;
+
+    @Autowired
+    private DigitalFootprintService digitalFootprintService;
+
+    @Autowired
+    private ExternalReferenceService externalReferenceService;
 
     public SbomGenerationResult generateSbomAndDeviceFromDirectory(
             Path extractedDir,
@@ -123,9 +130,12 @@ public class SbomGeneratorService {
                 throw new IllegalStateException("An SBOM already exists for this device and version: " + version);
             }
         } else {
-            device = new Device(deviceName, manufacturer, category, operatingSystem, osVersion, kernelVersion, "N/A");
+            String footprint = String.join("\n\n", digitalFootprintService.generateDigitalFootprints(dependencyFiles));
+
+            device = new Device(deviceName, manufacturer, category, operatingSystem, osVersion, kernelVersion, footprint);
             device = deviceRepository.save(device);
         }
+
 
         // 6. Save SBOM entry
         Sbom sbom = new Sbom(
@@ -156,6 +166,10 @@ public class SbomGeneratorService {
             softwarePackageRepository.save(pkg);
             sbomService.checkAndSaveVulnerabilities(pkg);
         }
+
+        //save and extract external references
+        List<String> extractedLinks = externalReferenceService.extractExternalReferences(extractedDir);
+        externalReferenceService.saveExternalReferences(sbom, extractedLinks);
 
         return new SbomGenerationResult(version, device);
     }
