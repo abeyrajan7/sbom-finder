@@ -9,9 +9,9 @@ export default function SideNavBar() {
     const pathname = usePathname();
     const navItems = [
       { label: "Dashboard", path: "/dashboard" },
-      { label: "Upload SBOM", path: "/upload-sbom" },
-      { label: "SBOM List", path: "/sbom-list" },
-      { label: "Compare SBOMs", path: "/compare-sboms" },
+      { label: "Upload Device Source", path: "/upload-device-source" },
+      { label: "Device List", path: "/device-list" },
+      { label: "Compare Device SBOMs", path: "/compare-device-sboms" },
       { label: "SBOM Archives", path: "/device-sbom-archive" },
       { label: "Analytics", path: "/analytics" },
     ];
@@ -23,12 +23,17 @@ export default function SideNavBar() {
       <ul className="nav-list">
              {navItems.map((item) => (
                  <li
-                  key={item.path}
-                  className={`nav-item ${pathname === item.path ? "active" : ""}`}
-                  onClick={() => router.push(item.path)}
-                >
-                  <span>{item.label}</span>
-                </li>
+                   key={item.path}
+                   className={`nav-item ${
+                     pathname.startsWith(item.path) ||
+                     (pathname.startsWith("/device-details") && item.path === "/device-list")
+                       ? "active"
+                       : ""
+                   }`}
+                   onClick={() => router.push(item.path)}
+                 >
+                   <span>{item.label}</span>
+                 </li>
               ))}
             </ul>
     </div>

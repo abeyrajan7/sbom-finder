@@ -7,15 +7,13 @@ export default function Dashboard() {
   return (
     <div className="dashboard-container">
       <div className="dashboard-box">
-        <h1 className="dashboard-title">Welcome to SBOM Finder</h1>
+        <h1 className="dashboard-title">Welcome to SBOM Finder for Devices</h1>
         <p className="dashboard-description">
-          Analyze, compare, and manage Software Bill of Materials (SBOMs) for your devices.
-          Easily upload SPDX, CycloneDX, or CPE formatted files and get insights into package
-          vulnerabilities and digital footprints.
+          Take control of your device security. Upload source code or SBOM files to generate detailed Software Bill of Materials (SBOMs), uncover vulnerabilities, compare devices, and explore historical insights — fast, simple, and powerful.
         </p>
 
-        <Link href="/upload-sbom" passHref>
-          <button className="upload-btn">Upload SBOM File</button>
+        <Link href="/upload-device-source" passHref>
+          <button className="upload-btn">Get Started</button>
         </Link>
       </div>
     </div>

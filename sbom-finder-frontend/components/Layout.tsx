@@ -1,4 +1,4 @@
-"use client"; // ❗Only use if you need hooks like useRouter()
+"use client";
 
 import SideNavBar from "./SideNavBar";
 
