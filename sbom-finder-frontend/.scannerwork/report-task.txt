@@ -1,0 +1,6 @@
+projectKey=sbom-finder-frontend
+serverUrl=http://localhost:9000
+serverVersion=25.4.0.105899
+dashboardUrl=http://localhost:9000/dashboard?id=sbom-finder-frontend
+ceTaskId=8fe02a01-f141-441b-94d1-d9bb5cbd739a
+ceTaskUrl=http://localhost:9000/api/ce/task?id=8fe02a01-f141-441b-94d1-d9bb5cbd739a
