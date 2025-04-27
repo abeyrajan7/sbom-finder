@@ -4,6 +4,7 @@ import com.sbomfinder.model.ExternalReference;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
+import com.sbomfinder.model.Sbom;
 
 import java.util.List;
 
@@ -14,5 +15,6 @@ public interface ExternalReferenceRepository extends JpaRepository<ExternalRefer
     @Query("SELECT er FROM ExternalReference er WHERE er.sbom.device.deviceName = :deviceName AND er.sbom.device.manufacturer = :manufacturer")
     List<ExternalReference> findByDeviceNameAndManufacturer(String deviceName, String manufacturer);
     void deleteBySbom_Id(Long sbomId);
+    boolean existsBySbomAndReferenceLocator(Sbom sbom, String referenceLocator);
 
 }

@@ -1,0 +1,6 @@
+projectKey=sbom-finder-backend
+serverUrl=http://localhost:9000
+serverVersion=25.4.0.105899
+dashboardUrl=http://localhost:9000/dashboard?id=sbom-finder-backend
+ceTaskId=88bab66b-de12-46f4-91c0-20c2a983d006
+ceTaskUrl=http://localhost:9000/api/ce/task?id=88bab66b-de12-46f4-91c0-20c2a983d006

@@ -7,6 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    // (Generated with assistance from OpenAI ChatGPT, April 2025 Version)
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")

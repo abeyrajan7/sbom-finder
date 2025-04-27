@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 @Configuration
 public class SecurityConfig {
 
+    // (Generated with assistance from OpenAI ChatGPT, April 2025 Version)
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http

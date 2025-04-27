@@ -44,7 +44,7 @@ public class SbomArchiveService {
             newArchive.setIsLatest(true);
             sbomArchiveRepository.save(newArchive);
         } catch (Exception e) {
-            e.printStackTrace(); // or use logger.error(...)
+            e.printStackTrace();
         }
     }
 

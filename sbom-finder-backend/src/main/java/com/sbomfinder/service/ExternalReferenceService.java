@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Set;
+import java.util.HashSet;
 
 @Service
 public class ExternalReferenceService {
@@ -55,15 +57,20 @@ public class ExternalReferenceService {
         return externalLinks;
     }
 
-    // New method to save external references linked to an SBOM
+    // method to save external references linked to an SBOM
     public void saveExternalReferences(Sbom sbom, List<String> externalLinks) {
-        for (String link : externalLinks) {
-            ExternalReference ref = new ExternalReference();
-            ref.setSbom(sbom);
-            ref.setReferenceCategory("EXTERNAL" );
-            ref.setReferenceType("WEBSITE");
-            ref.setReferenceLocator(link);
-            externalReferenceRepository.save(ref);
+        Set<String> uniqueLinks = new HashSet<>(externalLinks);
+
+        for (String link : uniqueLinks) {
+            boolean exists = externalReferenceRepository.existsBySbomAndReferenceLocator(sbom, link);
+            if (!exists) {
+                ExternalReference ref = new ExternalReference();
+                ref.setSbom(sbom);
+                ref.setReferenceCategory("EXTERNAL");
+                ref.setReferenceType("WEBSITE");
+                ref.setReferenceLocator(link);
+                externalReferenceRepository.save(ref);
+            }
         }
     }
 }
