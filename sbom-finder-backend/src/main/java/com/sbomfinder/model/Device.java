@@ -34,7 +34,7 @@ public class Device {
     @Column(name = "kernel_version")
     private String kernelVersion;
 
-    @Column(name = "digital_footprint", length = 500)
+    @Column(name = "digital_footprint", columnDefinition = "TEXT")
     private String digitalFootprint;
 
     @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

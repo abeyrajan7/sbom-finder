@@ -14,10 +14,21 @@ export default function UploadSBOMPage() {
   const [deviceName, setDeviceName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const [showOverlay, setShowOverlay] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    event.preventDefault();
+    event.returnValue = "Upload is in progress. Are you sure you want to leave?";
+  };
+  
   const handleUpload = async () => {
+
+      setShowOverlay(true);
+      window.addEventListener("beforeunload", handleBeforeUnload);
+
+
+
     setError(null);
 
     if (!file) {
@@ -41,6 +52,7 @@ export default function UploadSBOMPage() {
     formData.append("osVersion", osVersion || "Unknown Version");
     formData.append("kernelVersion", kernelVersion || "Unknown Kernel");
 
+
     try {
       const response = await fetch(`${BASE_URL}/api/sboms/upload-source`, {
         method: "POST",
@@ -59,7 +71,9 @@ export default function UploadSBOMPage() {
       console.error("Upload Error:", err);
       setError("Upload failed.");
     } finally {
-      setLoading(false);
+        setShowOverlay(false);
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+        setLoading(false);
     }
   };
 
@@ -152,6 +166,15 @@ export default function UploadSBOMPage() {
         >
           {loading ? "Uploading..." : "Upload"}
         </button>
+
+        {showOverlay && (
+          <div className="upload-overlay">
+            <div className="upload-overlay-content">
+              <h3>Uploading...</h3>
+              <p>Please do not close or switch tabs. This may take a few minutes.</p>
+            </div>
+          </div>
+        )}
 
         {error && <p className="error-message">{error}</p>}
       </div>
