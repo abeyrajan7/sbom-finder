@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sbomfinder.model.Device;
 import com.sbomfinder.model.Sbom;
 import com.sbomfinder.model.SoftwarePackage;
+import com.sbomfinder.model.Supplier;
+
+
 import com.sbomfinder.repository.DeviceRepository;
 import com.sbomfinder.service.DigitalFootprintService;
 import com.sbomfinder.repository.SbomRepository;
@@ -16,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sbomfinder.model.SbomArchive;
 import com.sbomfinder.repository.SbomArchiveRepository;
 import com.sbomfinder.repository.ExternalReferenceRepository;
+import com.sbomfinder.repository.SupplierRepository;
+
 
 import java.io.IOException;
 import java.net.URI;
@@ -64,6 +69,9 @@ public class SbomGeneratorService {
 
     @Autowired
     private ExternalReferenceService externalReferenceService;
+
+    @Autowired
+    private SupplierRepository supplierRepository;
 
     public SbomGenerationResult generateSbomAndDeviceFromDirectory(
             Path extractedDir,
@@ -159,12 +167,20 @@ public class SbomGeneratorService {
         List<SoftwarePackage> allPackages = new ArrayList<>();
         for (Path depFile : dependencyFiles) {
             List<SoftwarePackage> extractedPackages = sbomService.extractPackagesFromDependencyFile(depFile, sbom, device);
-            allPackages.addAll(extractedPackages);
-        }
+            String ecosystem = determineEcosystemFromFile(depFile.getFileName().toString());
 
-        for (SoftwarePackage pkg : allPackages) {
-            softwarePackageRepository.save(pkg);
-            sbomService.checkAndSaveVulnerabilities(pkg);
+            for (SoftwarePackage pkg : extractedPackages) {
+                softwarePackageRepository.save(pkg);
+                sbomService.checkAndSaveVulnerabilities(pkg);
+
+                String supplierName = inferSupplier(pkg.getName(), pkg.getVersion(), ecosystem);
+                Supplier supplier = getOrCreateSupplier(supplierName);
+                pkg.setSupplier(supplier);
+                softwarePackageRepository.save(pkg);
+                sbomService.checkAndSaveVulnerabilities(pkg);
+            }
+
+            allPackages.addAll(extractedPackages);
         }
 
         //save and extract external references
@@ -174,60 +190,12 @@ public class SbomGeneratorService {
         return new SbomGenerationResult(version, device);
     }
 
-
-
-    //From Dependency File
-    public SbomGenerationResult generateSbomAndDeviceFromDependencyFile(
-            Path dependencyFilePath,
-            String deviceName,
-            String category,
-            String manufacturer,
-            String operatingSystem,
-            String osVersion,
-            String kernelVersion
-    ) throws IOException, NoSuchAlgorithmException {
-        String hash = computeNormalizedSHA256(dependencyFilePath);
-        Optional<Sbom> existingByHash = sbomRepository.findByHash(hash);
-        if (existingByHash.isPresent()) {
-            throw new IllegalStateException("Duplicate SBOM source. This dependency file was already uploaded.");
-        }
-        // First, check if device exists or create new
-        Optional<Device> existingDevice = deviceRepository.findByDeviceNameAndManufacturerAndCategory(deviceName, manufacturer, category);
-        Device device;
-        if (existingDevice.isPresent()) {
-            device = existingDevice.get();
-        } else {
-            device = new Device(deviceName, manufacturer, category, operatingSystem, osVersion, kernelVersion, "N/A");
-            device = deviceRepository.save(device);
-        }
-
-        // Create new SBOM record
-        Sbom sbom = new Sbom(
-                "Manual Upload",
-                "N/A",
-                "N/A",
-                "N/A",
-                LocalDateTime.now(),
-                "Dependency Upload",
-                "CustomTool",
-                hash
-        );
-        sbom.setDevice(device);
-        sbom.setVersion("Unknown Release"); // No specific version info for dependency-only uploads
-        sbomRepository.save(sbom);
-
-        device.setSbom(sbom);
-        deviceRepository.save(device);
-
-        // Extract packages
-        List<SoftwarePackage> packages = sbomService.extractPackagesFromDependencyFile(dependencyFilePath, sbom, device);
-
-        for (SoftwarePackage pkg : packages) {
-            softwarePackageRepository.save(pkg);
-            sbomService.checkAndSaveVulnerabilities(pkg);
-        }
-
-        return new SbomGenerationResult("Unknown Release", device);
+    private String determineEcosystemFromFile(String fileName) {
+        if (fileName.contains("requirement") || fileName.equalsIgnoreCase("pipfile") || fileName.equalsIgnoreCase("setup.py")) return "pypi";
+        if (fileName.equalsIgnoreCase("package.json")) return "npm";
+        if (fileName.equalsIgnoreCase("cargo.toml")) return "cargo";
+        if (fileName.equalsIgnoreCase("pom.xml") || fileName.equalsIgnoreCase("build.gradle")) return "maven";
+        return "unknown";
     }
 
     private String computeNormalizedSHA256(Path file) throws IOException, NoSuchAlgorithmException {
@@ -264,36 +232,20 @@ public class SbomGeneratorService {
     }
 
     //to extract the supplier name
-    public String inferSupplierFromOsv(String name, String version) {
-        HttpClient client = HttpClient.newHttpClient();
-        String body = "{ \"package\": { \"name\": \"" + name + "\", \"ecosystem\": \"PyPI\" }, \"version\": \"" + version + "\" }";
-
+    public String inferSupplier(String name, String version, String ecosystem) {
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.osv.dev/v1/query"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(body))
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response.body());
-
-            JsonNode related = root.path("related");
-            if (related.isArray()) {
-                for (JsonNode entry : related) {
-                    String repoUrl = entry.path("repo").asText();
-                    if (repoUrl.contains("github.com")) {
-                        return repoUrl.split("/")[3]; // get the GitHub owner/org
-                    }
-                }
+            switch (ecosystem.toLowerCase()) {
+                case "pypi": return getPypiSupplier(name);
+                case "npm": return getNpmSupplier(name);
+                case "cargo": return getCratesSupplier(name);
+                case "maven":
+                    String[] parts = name.split(":");
+                    return parts.length == 2 ? getMavenSupplier(parts[0], parts[1]) : "Unknown";
+                default: return "Unknown";
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            return "Unknown";
         }
-
-        // Fallback to namespace-based heuristics
-        return inferSupplierFromNamespace(name);
     }
 
     private String computeSHA256(String normalizedContent) throws NoSuchAlgorithmException {
@@ -344,6 +296,116 @@ public class SbomGeneratorService {
             sbomArchiveRepository.save(newArchive);
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate SBOM JSON content", e);
+        }
+    }
+
+    //method to save supplier info
+    private Supplier getOrCreateSupplier(String name) {
+        return supplierRepository.findByName(name)
+                .orElseGet(() -> {
+                    Supplier s = new Supplier();
+                    s.setName(name);
+                    return supplierRepository.save(s);
+                });
+    }
+
+    private String getPypiSupplier(String name) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://pypi.org/pypi/" + name + "/json"))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                JsonNode root = new ObjectMapper().readTree(response.body());
+                JsonNode info = root.path("info");
+
+                if (info.hasNonNull("author") && !info.get("author").asText().isBlank()) {
+                    return info.get("author").asText();
+                }
+                if (info.hasNonNull("maintainer") && !info.get("maintainer").asText().isBlank()) {
+                    return info.get("maintainer").asText();
+                }
+            }
+        } catch (Exception ignored) {}
+        return "Unknown";
+    }
+
+    private String getNpmSupplier(String name) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://registry.npmjs.org/" + name))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.body());
+                JsonNode latestTag = root.path("dist-tags").path("latest");
+                if (latestTag.isMissingNode()) return "Unknown";
+
+                JsonNode versionNode = root.path("versions").path(latestTag.asText()).path("author");
+                if (versionNode.has("name")) return versionNode.get("name").asText();
+                if (versionNode.isTextual()) return versionNode.asText();
+            }
+        } catch (Exception ignored) {}
+        return "Unknown";
+    }
+
+    private String getCratesSupplier(String name) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://crates.io/api/v1/crates/" + name))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                JsonNode root = new ObjectMapper().readTree(response.body());
+                JsonNode crate = root.path("crate");
+
+                String homepage = crate.path("homepage").asText();
+                String repository = crate.path("repository").asText();
+
+                return extractDomain(homepage != null ? homepage : repository);
+            }
+        } catch (Exception ignored) {}
+        return "Unknown";
+    }
+
+    private String getMavenSupplier(String groupId, String artifactId) {
+        try {
+            String query = "https://search.maven.org/solrsearch/select?q=g:\"" + groupId + "\"+AND+a:\"" + artifactId + "\"&rows=1&wt=json";
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(query))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                JsonNode root = new ObjectMapper().readTree(response.body());
+                JsonNode docs = root.path("response").path("docs");
+                if (docs.isArray() && docs.size() > 0 && docs.get(0).has("publisher")) {
+                    return docs.get(0).get("publisher").asText();
+                }
+            }
+        } catch (Exception ignored) {}
+        return "Unknown";
+    }
+
+    private String extractDomain(String url) {
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            return (host != null) ? host.replace("www.", "") : "Unknown";
+        } catch (Exception e) {
+            return "Unknown";
         }
     }
 

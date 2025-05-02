@@ -86,7 +86,7 @@ public class DeviceController {
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
-                        pkg.getSupplier(),
+                        pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
                         pkg.getComponentType(),
                         vulns
                 );
@@ -152,7 +152,7 @@ public class DeviceController {
                          return new SoftwarePackageDTO(
                                  pkg.getName(),
                                  pkg.getVersion(),
-                                 pkg.getSupplier(),
+                                 pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
                                  pkg.getComponentType(),
                                  vulnDTOs
                          );
@@ -209,7 +209,7 @@ public class DeviceController {
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
-                        pkg.getSupplier(),
+                        pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
                         pkg.getComponentType(),
                         vulns
                 );
@@ -222,7 +222,7 @@ public class DeviceController {
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
-                        pkg.getSupplier(),
+                        pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
                         pkg.getComponentType(),
                         vulns
                 );
@@ -314,7 +314,7 @@ public class DeviceController {
                         return new SoftwarePackageDTO(
                                 pkg.getName(),
                                 pkg.getVersion(),
-                                pkg.getSupplier(),
+                                pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
                                 pkg.getComponentType(),
                                 vulnDTOs
                         );
@@ -506,3 +506,4 @@ public ResponseEntity<Resource> downloadArchivedSbom(
         }
     }
 }
+//background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);

@@ -50,6 +50,8 @@ import java.util.Optional;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.Arrays;
+import com.sbomfinder.util.Pair;
+import com.sbomfinder.util.PackageParser;
 
 @Service
 public class SbomService {
@@ -275,19 +277,18 @@ public class SbomService {
         } else if (fileName.contains("requirement") || fileName.equals("pipfile")) {
             // Python (requirements.txt, Pipfile)
             Arrays.stream(content.split("\n"))
-                  .filter(line -> !line.trim().isEmpty())
-                  .forEach(line -> {
-                      String[] parts = line.split("==");
-                      String name = parts[0].trim();
-                      String version = parts.length > 1 ? parts[1].trim() : "Unknown";
-                      SoftwarePackage sp = new SoftwarePackage();
-                      sp.setName(name);
-                      sp.setVersion(version);
-                      sp.setSbom(sbom);
-                      sp.setDevice(device);
-                      sp.setPurl(generatePurl("pypi", sp.getName(), sp.getVersion()));
-                      packages.add(sp);
-                  });
+                    .map(String::trim)
+                    .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                    .forEach(line -> {
+                        Pair<String, String> parsed = PackageParser.parseFlexiblePythonPackageLine(line);
+                        SoftwarePackage sp = new SoftwarePackage();
+                        sp.setName(parsed.getFirst());
+                        sp.setVersion(parsed.getSecond());
+                        sp.setSbom(sbom);
+                        sp.setDevice(device);
+                        sp.setPurl(generatePurl("pypi", sp.getName(), sp.getVersion()));
+                        packages.add(sp);
+                    });
 
         } else if (fileName.contains("setup")) {
             // Python setup.py

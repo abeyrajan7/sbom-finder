@@ -6,6 +6,10 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.ArrayList;
 import com.sbomfinder.model.Vulnerability;
+import com.sbomfinder.model.Supplier;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+
 
 @Entity
 @Table(name = "software_packages")
@@ -29,8 +33,8 @@ public class SoftwarePackage {
     @Column(columnDefinition = "TEXT")
     private String version;
 
-    @Column(name="supplier", columnDefinition = "TEXT")
-    private String supplier;
+//    @Column(name="supplier", columnDefinition = "TEXT")
+//    private String supplier;
 
     @Column(name = "download_location", columnDefinition = "TEXT")
     private String downloadLocation;
@@ -50,6 +54,10 @@ public class SoftwarePackage {
     @Column(name = "purl", columnDefinition = "TEXT")
     private String purl;
 
+    @ManyToOne
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
+
 
     @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
     @JoinTable(
@@ -66,7 +74,7 @@ public class SoftwarePackage {
 
     public SoftwarePackage() {}
 
-    public SoftwarePackage(Sbom sbom, String name, String version, String supplier, String downloadLocation,
+    public SoftwarePackage(Sbom sbom, String name, String version, Supplier supplier, String downloadLocation,
                            String licenseDeclared, String licenseConcluded, String copyrightText,
                            String componentType) {
         this.sbom = sbom;
@@ -85,7 +93,7 @@ public class SoftwarePackage {
     public Sbom getSbom() { return sbom; }
     public String getName() { return name; }
     public String getVersion() { return version; }
-    public String getSupplier() { return supplier; }
+    public Supplier getSupplier() { return supplier; }
     public String getDownloadLocation() { return downloadLocation; }
     public String getLicenseDeclared() { return licenseDeclared; }
     public String getLicenseConcluded() { return licenseConcluded; }
@@ -102,7 +110,7 @@ public class SoftwarePackage {
     public void setSbom(Sbom sbom) { this.sbom = sbom; }
     public void setName(String name) { this.name = name; }
     public void setVersion(String version) { this.version = version; }
-    public void setSupplier(String supplier) { this.supplier = supplier; }
+    public void setSupplier(Supplier supplier) { this.supplier = supplier; }
     public void setDownloadLocation(String downloadLocation) { this.downloadLocation = downloadLocation; }
     public void setLicenseDeclared(String licenseDeclared) { this.licenseDeclared = licenseDeclared; }
     public void setLicenseConcluded(String licenseConcluded) { this.licenseConcluded = licenseConcluded; }

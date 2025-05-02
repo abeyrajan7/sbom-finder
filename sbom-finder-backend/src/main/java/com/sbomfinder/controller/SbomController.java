@@ -155,40 +155,6 @@ public class SbomController {
         return ResponseEntity.ok("Device and all associated SBOMs deleted successfully!");
     }
 
-    @PostMapping("/upload-dependency")
-    public ResponseEntity<?> uploadDependencyFile(@RequestParam("file") MultipartFile file,
-                                                  @RequestParam("deviceName") String deviceName,
-                                                  @RequestParam("manufacturer") String manufacturer,
-                                                  @RequestParam("category") String category,
-                                                  @RequestParam(value = "operatingSystem", required = false) String operatingSystem,
-                                                  @RequestParam(value = "osVersion", required = false) String osVersion,
-                                                  @RequestParam(value = "kernelVersion", required = false) String kernelVersion) {
-        try {
-            Path tempFile = Files.createTempFile("dependency-", file.getOriginalFilename());
-            file.transferTo(tempFile.toFile());
-
-            // Instead of extracting, directly parse
-            SbomGenerationResult result = sbomGeneratorService.generateSbomAndDeviceFromDependencyFile(
-                    tempFile,
-                    deviceName,
-                    category,
-                    manufacturer,
-                    operatingSystem,
-                    osVersion,
-                    kernelVersion
-            );
-
-            Device device = result.getDevice();
-            String version = result.getVersion();
-
-            return ResponseEntity.ok("Dependency file processed successfully! Device ID: " + device.getId() + ", Version: " + version);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Error processing uploaded dependency file: " + e.getMessage());
-        }
-    }
-
     public static class DeviceDetailsResponse {
         public String deviceName;
         public String manufacturer;
