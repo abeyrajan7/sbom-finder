@@ -88,7 +88,7 @@ public class SoftwarePackage {
         this.componentType = componentType;
     }
 
-    // ✅ Getters
+    // Getters
     public Long getId() { return id; }
     public Sbom getSbom() { return sbom; }
     public String getName() { return name; }

@@ -14,7 +14,7 @@ public class Supplier {
     private String website; // optional
     private String contactInfo; // optional
 
-    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SoftwarePackage> packages = new ArrayList<>();
 
     public void setName(String name) {
@@ -23,5 +23,15 @@ public class Supplier {
 
     public String getName() {
         return name;
+    }
+
+    // Getter for id
+    public Long getId() {
+        return id;
+    }
+
+    // Setter if needed
+    public void setId(Long id) {
+        this.id = id;
     }
 }

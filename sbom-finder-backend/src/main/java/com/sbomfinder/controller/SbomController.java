@@ -5,10 +5,13 @@ import com.sbomfinder.model.Device;
 import com.sbomfinder.model.ExternalReference;
 import com.sbomfinder.model.Sbom;
 import com.sbomfinder.model.SoftwarePackage;
+import com.sbomfinder.model.Supplier;
+
 import com.sbomfinder.repository.DeviceRepository;
 import com.sbomfinder.repository.ExternalReferenceRepository;
 import com.sbomfinder.repository.SbomRepository;
 import com.sbomfinder.repository.SoftwarePackageRepository;
+import com.sbomfinder.repository.SupplierRepository;
 import com.sbomfinder.repository.SbomArchiveRepository;
 import com.sbomfinder.service.SbomGenerationResult;
 import com.sbomfinder.service.ExternalReferenceService;
@@ -27,6 +30,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 
 
 @RestController
@@ -57,6 +63,9 @@ public class SbomController {
 
     @Autowired
     private ExternalReferenceService externalReferenceService;
+
+    @Autowired
+    private SupplierRepository supplierRepository;
 
     @PostMapping("/upload-source")
     public ResponseEntity<?> uploadSourceZip(@RequestParam("file") MultipartFile file,
@@ -136,6 +145,22 @@ public class SbomController {
         Optional<Sbom> sbomOpt = sbomRepository.findByDevice(device);
         if (sbomOpt.isPresent()) {
             Sbom sbom = sbomOpt.get();
+
+
+            // 1b. Find Software Packages BEFORE deleting them
+            List<SoftwarePackage> packages = softwarePackageRepository.findByDeviceId(deviceId);
+            Set<Long> checkedSupplierIds = new HashSet<>();
+
+            for (SoftwarePackage pkg : packages) {
+                Supplier supplier = pkg.getSupplier();
+                if (supplier != null && !checkedSupplierIds.contains(supplier.getId())) {
+                    long count = softwarePackageRepository.countBySupplierId(supplier.getId());
+                    if (count <= 1) {
+                        supplierRepository.deleteById(supplier.getId()); // Use deleteById instead of delete()
+                    }
+                    checkedSupplierIds.add(supplier.getId());
+                }
+            }
             // 1. Delete Software Packages linked to this Device
             softwarePackageRepository.deleteByDeviceId(deviceId);
 
