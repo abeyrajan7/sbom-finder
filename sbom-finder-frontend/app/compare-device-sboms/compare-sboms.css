@@ -85,8 +85,10 @@
   
 
 .comparison-table td {
-  vertical-align: top;
-  padding: 1rem;
+      vertical-align: top;
+      padding: 1rem;
+      max-width: 1vw;
+      overflow: overlay;
 }
   
 .package-entry {
@@ -145,3 +147,5 @@
     overflow-y: auto;
     border: 1px solid #ccc;
 }
+
+

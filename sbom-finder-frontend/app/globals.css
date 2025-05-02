@@ -8,11 +8,14 @@
 }
 
 html, body {
+  @apply h-full;
+  height: 100%;
   max-width: 100vw;
   overflow-x: hidden;
-  background: var(--background-color);
+  /* background: var(--background-color); */
   color: var(--text-color);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);
 }
 
 * {
