@@ -1,58 +1,61 @@
 .device-details-container {
+  background-color: #ffffff;
   max-width: 800px;
   margin: 0 auto;
   padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .device-section {
-  border: 1px solid #ddd;
-  padding: 16px;
-  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #4b5563;
   border-radius: 8px;
+  /* padding: 1rem; */
+  margin-bottom: 1.5rem;
+  transition: background-color 0.2s ease;
 }
 
 .device-section h2 {
-  margin-bottom: 10px;
-  font-size: 20px;
+  font-size: 1.1rem;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
 }
 
 .device-section li {
   margin-bottom: 6px;
 }
 
-.package-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  padding: 0;
-  list-style: none;
-}
-
-.package-grid li {
-  background: #f9f9f9;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-
-.vulnerability-grid {
+.package-grid,
+.vulnerability-grid,
+.reference-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.package-grid li,
+.reference-card {
+  background: #ffffff;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
 }
 
 .vuln-card {
-  background: #fff3f3;
-  border: 1px solid #ffa6a6;
+  background: #fff5f5;
+  border: 1px solid #fca5a5;
   border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .vuln-card h4 {
   margin: 0 0 8px;
-  color: #c0392b;
+  color: #b91c1c;
 }
 
 .vuln-card p {
@@ -60,33 +63,40 @@
 }
 
 .vuln-card a {
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: underline;
   display: inline-block;
   margin-top: 8px;
-  color: #2980b9;
-  text-decoration: underline;
-}
-
-.device-section {
-  margin-bottom: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
-  background: #f9f9f9;
 }
 
 .section-header {
+  background-color: #006d77; /* Deep teal */
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.05rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 12px 16px;
+  border-radius: 6px;
+  /* margin-bottom: 0.5rem; */
+}
+
+.device-section > :not(.section-header) {
+  padding: 12px 16px;
 }
 
 .section-header button {
   font-size: 1.2rem;
   background: none;
   border: none;
+  color: #ffffff;
+  font-weight: bold;
   cursor: pointer;
+  margin-left: auto;
+  padding-left: 8px;
 }
-
 
 .back-button-container {
   margin-bottom: 1rem;
@@ -99,33 +109,21 @@
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
+  color: #374151;
   transition: background-color 0.2s ease;
+  left: 13vw;
+  top: 3vh;
+  position: absolute;
 }
 
 .back-button:hover {
   background-color: #d1d5db;
 }
 
-/* external references */
-.reference-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-  padding-top: 1rem;
-}
-
-.reference-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
-  background-color: #f9f9f9;
-}
-
-/* packages */
 .pkg-block {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .vuln-tags {
@@ -140,11 +138,7 @@
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 500;
-}
-
-.device-details-container {
-    background-color: #024950;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 24px;
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
 }

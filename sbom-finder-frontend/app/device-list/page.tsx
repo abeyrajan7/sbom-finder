@@ -22,11 +22,22 @@ export default function DevicesPage() {
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const [devices, setDevices] = useState<Device[]>([]);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [overlayMessage, setOverlayMessage] = useState("Processing...");
+  const [selectedDownloadId, setSelectedDownloadId] = useState<number | null>(null);
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [footprintModal, setFootprintModal] = useState<{ open: boolean, content: string }>({
+    open: false,
+    content: ''
+  });
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/devices/all`)
       .then((res) => res.json())
-      .then((data) => setDevices(data))
+      .then((data) => {
+        const sortedData = data.sort((a: Device, b: Device) => b.sbomId - a.sbomId); // descending by sbomId
+        setDevices(sortedData);
+      })
       .catch((err) => console.error("Error fetching devices:", err));
   }, []);
 
@@ -57,13 +68,13 @@ export default function DevicesPage() {
   const handleDelete = async (deviceId : number) => {
     if (confirm("Are you sure you want to delete this SBOM?")) {
       try {
-        const response = await fetch(`${BASE_URL}/api/sboms/${deviceId}`, {
-          method: "DELETE",
-        });
+          setOverlayMessage("Deletion in progress... Please do not close or switch tabs. This may take a few moments.");
+          setShowOverlay(true);
+          const response = await fetch(`${BASE_URL}/api/sboms/${deviceId}`, {
+              method: "DELETE",
+              });
 
         if (response.ok) {
-          alert("SBOM deleted successfully!");
-          // Optionally, refresh device list after deletion
           fetchDevices();
         } else {
           alert("Failed to delete SBOM.");
@@ -71,6 +82,8 @@ export default function DevicesPage() {
       } catch (error) {
         console.error("Error deleting device:", error);
         alert("An error occurred while deleting.");
+      } finally {
+          setShowOverlay(false);
       }
     }
   };
@@ -81,8 +94,7 @@ export default function DevicesPage() {
 
   return (
     <div className="devices-container">
-      <h2>Device List</h2>
-      <SearchFilterBar onSearch={handleSearch} />
+      <SearchFilterBar onSearch={handleSearch} onReset={fetchDevices} />
 
       <div className="table-scroll-wrapper">
         <table className="devices-table">
@@ -124,47 +136,38 @@ export default function DevicesPage() {
                   <td>{device.operatingSystem}</td>
                   <td>{device.osVersion}</td>
                   <td>{device.kernelVersion}</td>
-                  <td>{device.digitalFootprint}</td>
                   <td>
-                    <div className="relative flex items-center space-x-4">
-                      {/* Delete Button */}
+                    <div className="footprint-btn-container">
                       <button
-                        className="text-red-500 hover:underline"
+                        className="view-btn"
+                        onClick={() =>
+                          setFootprintModal({ open: true, content: device.digitalFootprint })
+                        }
+                      >
+                        View
+                      </button>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="delete-btn"
                         onClick={() => handleDelete(device.deviceId)}
                       >
                         Delete
                       </button>
 
-                      {/* Download Button */}
                       <button
-                        onClick={() => toggleDropdown(index)}
-                        className="text-blue-500 hover:text-blue-700"
-                        title="Download SBOM"
+                        onClick={() => {
+                          setSelectedDownloadId(device.deviceId);
+                          setShowDownloadDialog(true);
+                        }}
+                        className="download-btn"
                       >
                         Download SBOM
                       </button>
 
-                      {/* Dropdown menu */}
-                      {openDropdown === index && (
-                        <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded shadow-md z-10">
-                          <a
-                            href={`${BASE_URL}/api/devices/download/${device.deviceId}?format=cyclonedx`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                          >
-                            CycloneDX
-                          </a>
-                          <a
-                            href={`${BASE_URL}/api/devices/download/${device.deviceId}?format=spdx`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                          >
-                            SPDX
-                          </a>
-                        </div>
-                      )}
+
                     </div>
                   </td>
                 </tr>
@@ -173,6 +176,63 @@ export default function DevicesPage() {
           </tbody>
         </table>
       </div>
+
+
+
+      {showDownloadDialog && selectedDownloadId && (
+        <div className="download-dialog">
+          <div className="dialog-box">
+            <p>Select format to download:</p>
+            <button
+              className="download-btn"
+              onClick={() => {
+                    window.open(`${BASE_URL}/api/devices/download/${selectedDownloadId}?format=cyclonedx`, '_blank')
+                    setShowDownloadDialog(false);
+                }
+              }
+            >
+              CycloneDX
+            </button>
+            <button
+              className="download-btn"
+              onClick={() =>{
+                    window.open(`${BASE_URL}/api/devices/download/${selectedDownloadId}?format=spdx`, '_blank')
+                    setShowDownloadDialog(false);
+                }
+              }
+            >
+              SPDX
+            </button>
+            <button className="cancel-button" onClick={() => setShowDownloadDialog(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+
+      {showOverlay && (
+        <div className="upload-overlay">
+          <div className="upload-overlay-content">
+            <h3>{overlayMessage}</h3>
+          </div>
+        </div>
+      )}
+
+  {footprintModal.open && (
+          <div className="modal-overlay">
+            <div className="modal-box">
+              <h3>Digital Footprint</h3>
+              <pre className="footprint-content">{footprintModal.content}</pre>
+              <button className="close-btn" onClick={() => setFootprintModal({ open: false, content: '' })}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+
+
     </div>
   );
 }

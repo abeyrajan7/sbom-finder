@@ -1,34 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .devices-container {
-    width: 90%;
-    margin: auto;
-    text-align: center;
-     max-height: 90vh;
-  }
-  
-  h2 {
-    margin-bottom: 20px;
-  }
-  
-  .devices-table {
+  width: 95%;
+  margin: auto;
+  text-align: center;
+  padding-top: 2vh;
+}
+
+h2 {
+  margin-bottom: 2vh;
+  font-weight: 600;
+  font-size: 1.75rem;
+}
+
+.table-scroll-wrapper {
+  max-height: 80vh;
+  overflow-x: auto;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.devices-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border: 2px solid #ccc;
+  font-size: 1vw;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.devices-table th,
+.devices-table td {
+  padding: 1.2vh 1vw;
+  border: 1px solid #b3b3b3;
+  word-break: break-word;
+  white-space: pre-wrap;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.devices-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  text-align: center;
+}
+
+.devices-table td:nth-child(7),
+.devices-table th:nth-child(7) {
+  max-width: 30vw;
+}
+
+.devices-table tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.devices-table tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+
+.devices-table tr:hover {
+  background-color: #e2e8f0;
+}
+
+/* Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;  /* Makes buttons take full available width */
+  width: 100%;
+}
+
+.delete-btn,
+.download-btn {
+  padding: 1vh 1vw;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 100%;  /* Make it responsive */
+  max-width: 150px;  /* Optional: limit on large screens */
+  margin: 0 auto; /* center inside cell */
+  box-sizing: border-box;
+}
+
+.download-btn {
+  background-color: #2563eb;
+  color: white;
+}
+
+.download-btn:hover {
+  background-color: #1e40af;
+}
+
+.delete-btn {
+  background-color: #dc2626;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #991b1b;
+}
+
+
+.download-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.dialog-box button {
+  display: block;
+  margin: 0.5rem auto;
+  padding: 0.75rem 1.5rem;
+  width: 100%;
+  max-width: 200px;
+}
+
+.cancel-button {
+  background: #e5e7eb;
+  color: #111;
+}
+
+.cancel-button:hover {
+  background: #d1d5db;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 80vw;
+  max-height: 70vh;
+  overflow-y: auto;
+  text-align: left;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.footprint-content {
+  white-space: pre-wrap;
+  background: #f3f4f6;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: #111827;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.close-btn {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.view-btn {
+  background-color: #6b7280; /* Cool Gray */
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.view-btn:hover {
+  background-color: #4b5563; /* Darker Gray */
+}
+
+.footprint-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+
+/* Dropdown
+.download-dropdown {
+  margin-top: 0.25rem;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.5rem;
+  width: 140px;
+}
+
+.download-dropdown a {
+  display: block;
+  padding: 4px 0;
+  color: #333;
+  text-decoration: none;
+}
+
+.download-dropdown a:hover {
+  background: #f1f1f1;
+} */
+
+/* Overlay */
+.upload-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-overlay-content {
+  text-align: center;
+  max-width: 90%;
+  font-size: 1.2rem;
+  background: #222;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+  .devices-container {
     width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .devices-table th, .devices-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
-  
-  .devices-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+    padding: 1rem;
   }
 
-  .table-scroll-wrapper {
-    max-height: 70vh;
-    overflow-y: auto;
-    border: 1px solid #ccc;
+  .devices-table {
+    font-size: 2.8vw;
   }
+
+  .delete-btn,
+  .download-btn {
+    width: 100%;
+    font-size: 0.8rem;
+  }
+
+  .action-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .download-dropdown {
+    width: 100%;
+  }
+}

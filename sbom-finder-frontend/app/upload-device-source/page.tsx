@@ -61,7 +61,6 @@ export default function UploadSBOMPage() {
 
       if (response.ok) {
         const result = await response.text();
-        alert(`Success: ${result}`);
         resetForm();
       } else {
         const result = await response.text();

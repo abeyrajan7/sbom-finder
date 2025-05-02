@@ -7,6 +7,7 @@ type Props = {
     manufacturer?: string;
     operatingSystem?: string;
   }) => void;
+  onReset: () => void;
 };
 
 type AnalyticsItem = {
@@ -14,7 +15,7 @@ type AnalyticsItem = {
   sboms: number;
 };
 
-const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
+const SearchFilterBar: React.FC<Props> = ({ onSearch, onReset }) => {
 //     const BASE_URL = 'https://sbom-finder-backend.onrender.com';
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const [query, setQuery] = useState('');
@@ -48,6 +49,14 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
       operatingSystem: operatingSystem || '',
     });
   };
+
+  const handleReset = () => {
+    setQuery('');
+    setManufacturer('');
+    setOperatingSystem('');
+    onReset(); // Calls parent-provided function to reload all devices
+  };
+
 
   return (
     <div className="search-filter-container">
@@ -87,6 +96,10 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch }) => {
 
       <button className="search-button" onClick={handleSubmit}>
         Search
+      </button>
+
+      <button className="search-button" onClick={handleReset}>
+          Reset
       </button>
     </div>
   );
