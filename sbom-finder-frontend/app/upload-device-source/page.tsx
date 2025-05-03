@@ -60,7 +60,6 @@ export default function UploadSBOMPage() {
       });
 
       if (response.ok) {
-        const result = await response.text();
         resetForm();
       } else {
         setError(result);
