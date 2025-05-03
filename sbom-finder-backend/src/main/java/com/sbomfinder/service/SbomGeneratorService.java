@@ -88,23 +88,33 @@ public class SbomGeneratorService {
         List<Path> dependencyFiles = Files.walk(extractedDir)
                 .filter(path -> {
                     String name = path.getFileName().toString().toLowerCase();
-                    return name.equals("package.json") ||
+                    boolean isMatch = name.equals("package.json") ||
                             name.equals("package-lock.json") ||
                             name.equals("pom.xml") ||
                             name.equals("build.gradle") ||
-                            name.contains("requirement") ||
+                            name.equals("requirements.txt") ||
                             name.equals("pipfile") ||
                             name.equals("setup.py") ||
                             name.equals("go.mod") ||
                             name.equals("composer.json") ||
                             name.equals("cargo.toml");
+
+                    if (isMatch) {
+                        System.out.println("Found dependency file: " + path.toString());
+                        try {
+                            System.out.println("Content preview: " + Files.readString(path).substring(0, 100));
+                        } catch (Exception e) {
+                            System.out.println("Failed to read content from: " + path);
+                        }
+                    }
+
+                    return isMatch;
                 })
                 .collect(Collectors.toList());
 
         if (dependencyFiles.isEmpty()) {
             throw new IllegalArgumentException("No supported dependency file found in the extracted source.");
         }
-
         // 2. Combine and normalize content from all files to generate consistent hash
         dependencyFiles.sort(Comparator.comparing(Path::toString)); // consistent order
         StringBuilder combinedContent = new StringBuilder();
