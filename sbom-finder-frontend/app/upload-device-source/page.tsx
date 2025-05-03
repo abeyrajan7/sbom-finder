@@ -73,6 +73,7 @@ export default function UploadSBOMPage() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       setLoading(false);
     }
+  };
 
 
   const resetForm = () => {
