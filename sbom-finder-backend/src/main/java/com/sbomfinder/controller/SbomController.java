@@ -100,7 +100,7 @@ public class SbomController {
                     extractedDir,
                     deviceName,
                     category != null ? category : "Unknown",
-                    manufacturer != null ? category : "Unknown",
+                    manufacturer != null ? manufacturer : "Unknown",
                     operatingSystem != null ? operatingSystem : "Unknown OS",
                     osVersion != null ? osVersion : "Unknown Version",
                     kernelVersion != null ? kernelVersion : "Unknown Kernel",
