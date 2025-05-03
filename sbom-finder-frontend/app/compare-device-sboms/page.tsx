@@ -74,7 +74,7 @@ export default function CompareSbomsPage() {
       .then((res) => res.json())
       .then((data) => setDevices(data))
       .catch((err) => console.error("Error fetching devices list:", err));
-  }, []);
+  }, [BASE_URL]);
 
   const handleCompare = () => {
     if (!device1Id || !device2Id) return;
@@ -196,7 +196,7 @@ export default function CompareSbomsPage() {
                   <td>{fieldLabels[row.field] || row.field}</td>
 
                   {row.field === "packages"
-                    ? ["device1Value", "device2Value"].map((key) => (
+                    ? (["device1Value", "device2Value"] as const).map((key) => (
                         <td key={key}>
                           {Array.isArray(row[key]) && row[key].length > 0 ? (
                             (row[key] as SoftwarePackage[]).map((pkg, idx) => (
@@ -216,7 +216,7 @@ export default function CompareSbomsPage() {
                                         className="vuln-toggle-button supplier-btn"
                                         onClick={() =>
                                           toggleField(
-                                            key as "device1Value" | "device2Value",
+                                            key,
                                             idx,
                                             "showSupplier"
                                           )
@@ -236,7 +236,7 @@ export default function CompareSbomsPage() {
                                         className="vuln-toggle-button"
                                         onClick={() =>
                                           toggleField(
-                                            key as "device1Value" | "device2Value",
+                                            key,
                                             idx,
                                             "showVulns"
                                           )
@@ -269,7 +269,7 @@ export default function CompareSbomsPage() {
                         </td>
                       ))
                     : row.field === "externalReferences"
-                    ? ["device1Value", "device2Value"].map((key) => (
+                    ? (["device1Value", "device2Value"] as const).map((key) => (
                         <td key={key}>
                           {isExternalReferenceArray(row[key]) ? (
                             row[key].map((ref, i) => (
@@ -291,7 +291,9 @@ export default function CompareSbomsPage() {
                           )}
                         </td>
                       ))
-                    : ["device1Value", "device2Value"].map((key) => <td key={key}>{row[key]}</td>)}
+                    : (["device1Value", "device2Value"] as const).map((key) => (
+                        <td key={key}>{row[key]}</td>
+                      ))}
                 </tr>
               ))}
             </tbody>
