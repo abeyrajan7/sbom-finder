@@ -8,6 +8,7 @@ import "./device-details.css";
 interface SoftwarePackage {
   name: string;
   version: string;
+  supplierName?: string;
 }
 
 interface Vulnerability {
