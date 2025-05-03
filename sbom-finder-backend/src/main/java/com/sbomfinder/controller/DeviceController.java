@@ -83,10 +83,11 @@ public class DeviceController {
             List<SoftwarePackage> softwarePackages = softwarePackageRepository.findByDeviceId(device.getId());
             List<SoftwarePackageDTO> softwarePackageDTOs = softwarePackages.stream().map(pkg -> {
                 List<VulnerabilityDTO> vulns = vulnerabilityService.getVulnerabilitiesByPackageId(pkg.getId());
+                String supplierName = pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown Supplier";
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
-                        pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
+                        supplierName,
                         pkg.getComponentType(),
                         vulns
                 );
@@ -148,11 +149,13 @@ public class DeviceController {
                              dto.setSeverityLevel(dto.getSeverityLevel()); // if you're computing it during DB insert
                              return dto;
                          }).collect(Collectors.toList());
+                         String supplierName = pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown Supplier";
+
 
                          return new SoftwarePackageDTO(
                                  pkg.getName(),
                                  pkg.getVersion(),
-                                 pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
+                                 supplierName,
                                  pkg.getComponentType(),
                                  vulnDTOs
                          );
@@ -206,10 +209,11 @@ public class DeviceController {
             List<SoftwarePackage> softwarePackages1 = softwarePackageRepository.findByDeviceId(device1.getId());
             List<SoftwarePackageDTO> softwarePackageDTOs1 = softwarePackages1.stream().map(pkg -> {
                 List<VulnerabilityDTO> vulns = vulnerabilityService.getVulnerabilitiesByPackageId(pkg.getId());
+                String supplierName = pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown Supplier";
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
-                        pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
+                        supplierName,
                         pkg.getComponentType(),
                         vulns
                 );
@@ -219,10 +223,11 @@ public class DeviceController {
             List<SoftwarePackage> softwarePackages2 = softwarePackageRepository.findByDeviceId(device2.getId());
             List<SoftwarePackageDTO> softwarePackageDTOs2 = softwarePackages2.stream().map(pkg -> {
                 List<VulnerabilityDTO> vulns = vulnerabilityService.getVulnerabilitiesByPackageId(pkg.getId());
+                String supplierName = pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown Supplier";
                 return new SoftwarePackageDTO(
                         pkg.getName(),
                         pkg.getVersion(),
-                        pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
+                        supplierName,
                         pkg.getComponentType(),
                         vulns
                 );
@@ -294,7 +299,7 @@ public class DeviceController {
             @RequestParam(required = false) String manufacturer,
             @RequestParam(required = false) String operatingSystem) {
 
-        List<Device> devices = deviceRepository.searchWithFilters(query, manufacturer, operatingSystem);
+        List<Device> devices = deviceRepository.searchWithFuzzyFilters(query, manufacturer, operatingSystem);
 
         List<DeviceDetailsDTO> deviceDetailsList = devices.stream().map(device -> {
             List<SoftwarePackageDTO> softwarePackageDTOs = softwarePackageRepository
@@ -310,11 +315,12 @@ public class DeviceController {
                             dto.setSeverityLevel(v.getSeverityLevel());
                             return dto;
                         }).collect(Collectors.toList());
+                        String supplierName = pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown Supplier";
 
                         return new SoftwarePackageDTO(
                                 pkg.getName(),
                                 pkg.getVersion(),
-                                pkg.getSupplier() != null ? pkg.getSupplier().getName() : "Unknown",
+                                supplierName,
                                 pkg.getComponentType(),
                                 vulnDTOs
                         );
