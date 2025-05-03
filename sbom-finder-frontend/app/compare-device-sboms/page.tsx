@@ -196,7 +196,7 @@ export default function CompareSbomsPage() {
                   <td>{fieldLabels[row.field] || row.field}</td>
 
                   {row.field === "packages"
-                    ? ["device1Value", "device2Value"].map((key, _) => (
+                    ? ["device1Value", "device2Value"].map((key) => (
                         <td key={key}>
                           {Array.isArray(row[key]) && row[key].length > 0 ? (
                             (row[key] as SoftwarePackage[]).map((pkg, idx) => (
