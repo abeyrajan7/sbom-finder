@@ -62,17 +62,18 @@ export default function UploadSBOMPage() {
       if (response.ok) {
         resetForm();
       } else {
-        setError(result);
+        const errorText = await response.text();
+        setError(errorText || "Upload failed.");
       }
     } catch (err) {
       console.error("Upload Error:", err);
       setError("Upload failed.");
     } finally {
-        setShowOverlay(false);
-        window.removeEventListener("beforeunload", handleBeforeUnload);
-        setLoading(false);
+      setShowOverlay(false);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      setLoading(false);
     }
-  };
+
 
   const resetForm = () => {
     setFile(null);
