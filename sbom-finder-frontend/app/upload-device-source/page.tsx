@@ -63,7 +63,6 @@ export default function UploadSBOMPage() {
         const result = await response.text();
         resetForm();
       } else {
-        const result = await response.text();
         setError(result);
       }
     } catch (err) {

@@ -88,10 +88,6 @@ export default function DevicesPage() {
     }
   };
 
-//   const toggleDropdown = (index: number) => {
-//     setOpenDropdown((prev) => (prev === index ? null : index));
-//   };
-
   return (
     <div className="devices-container">
       <SearchFilterBar onSearch={handleSearch} onReset={fetchDevices} />
