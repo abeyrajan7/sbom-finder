@@ -6,7 +6,7 @@ import './device-sbom-archive.css';
 
 interface ArchiveEntry {
   archiveId: number;
-  version: string;
+  name: string;
   isLatest: boolean;
 }
 
@@ -37,29 +37,28 @@ const SbomArchiveDownload: React.FC = () => {
     <div className="sbom-archive-container">
       <h2>SBOM Archives</h2>
       <div className="archive-table">
-        <div className="device-column">
-          {deviceData.map(device => (
-            <div key={device.deviceName} className="device-name">{device.deviceName}</div>
-          ))}
-        </div>
-        <div className="versions-column">
-          {deviceData.map(device => (
-            <div key={device.deviceName} className="device-versions">
-              {device.archives.map(archive => (
-                <div
-                  key={archive.archiveId}
-                  className="version-link"
-                  onClick={() => {
-                    setSelectedArchiveId(archive.archiveId);
-                    setShowDialog(true);
-                  }}
-                >
-                  {archive.version} {archive.isLatest ? '(latest)' : archive.version }
-                </div>
-              ))}
+        {deviceData.map(device => (
+          <div key={device.deviceName} className="archive-row">
+            <div className="device-name">{device.deviceName}</div>
+            <div className="device-versions">
+              {device.archives
+                .slice()
+                .sort((a, b) => (a.isLatest === b.isLatest ? 0 : a.isLatest ? -1 : 1))
+                .map((archive) => (
+                  <div
+                    key={archive.archiveId}
+                    className="version-link"
+                    onClick={() => {
+                      setSelectedArchiveId(archive.archiveId);
+                      setShowDialog(true);
+                    }}
+                  >
+                    {archive.name} {archive.isLatest ? '(latest)' : ''}
+                  </div>
+                ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {showDialog && selectedArchiveId && (
