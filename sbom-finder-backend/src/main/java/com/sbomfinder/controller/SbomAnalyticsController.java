@@ -9,6 +9,8 @@ import com.sbomfinder.repository.VulnerabilityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import com.sbomfinder.model.Supplier;
+import com.sbomfinder.repository.SupplierRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,6 +27,9 @@ public class SbomAnalyticsController {
 
     @Autowired
     private VulnerabilityRepository vulnerabilityRepository;
+
+    @Autowired
+    private SupplierRepository supplierRepository;
 
     @GetMapping("/operating-systems")
     public ResponseEntity<List<Map<String, Object>>> getOperatingSystems() {
@@ -47,8 +52,8 @@ public class SbomAnalyticsController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/suppliers")
-    public ResponseEntity<List<Map<String, Object>>> getSuppliers() {
+    @GetMapping("/manufacturers")
+    public ResponseEntity<List<Map<String, Object>>> getManufacturers() {
         List<Device> devices = deviceRepository.findAll();
         Map<String, Long> counts = devices.stream()
                 .collect(Collectors.groupingBy(
@@ -66,11 +71,6 @@ public class SbomAnalyticsController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/manufacturers")
-    public ResponseEntity<List<Map<String, Object>>> getManufacturers() {
-        return getSuppliers();
     }
 
     @GetMapping("/vulnerabilities-by-category")
@@ -147,17 +147,19 @@ public class SbomAnalyticsController {
 
     @GetMapping("/vulnerable-suppliers")
     public ResponseEntity<List<Map<String, Object>>> getVulnerableSuppliers() {
-        List<Device> devices = deviceRepository.findAll();
+        List<SoftwarePackage> packages = softwarePackageRepository.findAll();
+
         Map<String, Long> supplierVulnCounts = new HashMap<>();
 
-        for (Device device : devices) {
-            List<SoftwarePackage> packages = softwarePackageRepository.findByDeviceId(device.getId());
-            long vulnCount = packages.stream()
-                    .flatMap(pkg -> pkg.getVulnerabilities().stream())
-                    .count();
+        for (SoftwarePackage pkg : packages) {
+            String supplierName = Optional.ofNullable(pkg.getSupplier())
+                    .map(s -> s.getName())
+                    .orElse("Unknown");
 
-            String supplier = Optional.ofNullable(device.getManufacturer()).orElse("Unknown");
-            supplierVulnCounts.put(supplier, supplierVulnCounts.getOrDefault(supplier, 0L) + vulnCount);
+            long vulnCount = pkg.getVulnerabilities().size();
+
+            supplierVulnCounts.put(supplierName,
+                    supplierVulnCounts.getOrDefault(supplierName, 0L) + vulnCount);
         }
 
         List<Map<String, Object>> response = supplierVulnCounts.entrySet().stream()
@@ -167,11 +169,12 @@ public class SbomAnalyticsController {
                     map.put("vulns", entry.getValue());
                     return map;
                 })
-                .sorted((a, b) -> Long.compare((long) b.get("vulns"), (long) a.get("vulns")))
+                .sorted((a, b) -> Long.compare((Long) b.get("vulns"), (Long) a.get("vulns")))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/category")
     public List<Map<String, Object>> getFixedCategoriesAnalytics() {
@@ -195,5 +198,30 @@ public class SbomAnalyticsController {
         response.add(smartHomeEntry);
 
         return response;
+    }
+
+    @GetMapping("/suppliers")
+    public ResponseEntity<List<Map<String, Object>>> getSupplierStatistics() {
+        List<Supplier> suppliers = supplierRepository.findAll();
+
+        List<Map<String, Object>> result = suppliers.stream().map(supplier -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("supplier", supplier.getName());
+
+            List<SoftwarePackage> packages = softwarePackageRepository.findBySupplier(supplier);
+            map.put("packageCount", packages.size());
+
+            List<Map<String, String>> packageList = packages.stream().map(pkg -> {
+                Map<String, String> pkgMap = new HashMap<>();
+                pkgMap.put("name", pkg.getName());
+                pkgMap.put("version", pkg.getVersion());
+                return pkgMap;
+            }).collect(Collectors.toList());
+
+            map.put("packages", packageList);
+            return map;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
     }
 }

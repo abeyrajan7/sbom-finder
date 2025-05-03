@@ -3,10 +3,14 @@ package com.sbomfinder.repository;
 import com.sbomfinder.model.SoftwarePackage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import com.sbomfinder.model.Supplier;
+import com.sbomfinder.repository.SupplierRepository;
+import com.sbomfinder.model.Supplier;
 
 import java.util.List;
 
 public interface SoftwarePackageRepository extends JpaRepository<SoftwarePackage, Long> {
+
     List<SoftwarePackage> findBySbomId(Long sbomId);
     boolean existsByNameAndVersion(String name, String version);
 
@@ -26,6 +30,8 @@ public interface SoftwarePackageRepository extends JpaRepository<SoftwarePackage
     default List<SoftwarePackage> findDriversBySbomId(Long sbomId) {
         return findPackagesBySbomIdAndKeyword(sbomId, "driver");
     }
+
+    List<SoftwarePackage> findBySupplier(Supplier supplier);
 
     void deleteByDeviceId(Long deviceId);
 
