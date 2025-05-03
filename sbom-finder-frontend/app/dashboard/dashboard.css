@@ -1,51 +1,83 @@
-/* Full screen container with light gradient background */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
 .dashboard-container {
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);
+  background-color: #003b3b; /* deep teal consistent with sidebar */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 2rem;
 }
 
-/* Card box with shadow and rounded corners */
 .dashboard-box {
   background-color: #ffffff;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border-radius: 1rem;
-  padding: 2.5rem;
-  max-width: 600px;
+  border-radius: 1.25rem;
+  padding: 3rem;
+  max-width: 700px;
   width: 100%;
   text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
 }
 
-/* Heading */
+.dashboard-box:hover {
+  transform: translateY(-2px);
+}
+
 .dashboard-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1f2937; /* gray-800 */
-  margin-bottom: 1rem;
+  color: #1f2937; /* dark gray */
+  margin-bottom: 1.2rem;
 }
 
-/* Description text */
 .dashboard-description {
-  font-size: 1rem;
-  color: #4b5563; /* gray-600 */
-  margin-bottom: 1.5rem;
+  font-size: 1.05rem;
+  color: #4b5563;
+  margin-bottom: 2rem;
+  line-height: 1.6;
 }
 
-/* Upload button */
 .upload-btn {
-  background-color: #2563eb; /* blue-600 */
+  background-color: #2563eb; /* SBOM blue */
   color: white;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  font-size: 1rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 0.75rem;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.25s ease, transform 0.2s ease;
 }
 
 .upload-btn:hover {
-  background-color: #1d4ed8; /* blue-700 */
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.dashboard-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .dashboard-title {
+    font-size: 1.8rem;
+  }
+
+  .dashboard-description {
+    font-size: 0.95rem;
+  }
+
+  .upload-btn {
+    width: 100%;
+    font-size: 1rem;
+  }
 }

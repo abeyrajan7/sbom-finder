@@ -112,6 +112,12 @@ export default function CompareSbomsPage() {
       .catch((err) => console.error("Error comparing SBOMs:", err));
   };
 
+  const handleReset = () => {
+    setDevice1Id("");
+    setDevice2Id("");
+    setComparisonData([]);
+  };
+
   return (
     <div className="compare-container">
       <h1 className="compare-title">Compare SBOMs of Devices</h1>
@@ -150,9 +156,14 @@ export default function CompareSbomsPage() {
         </div>
       </div>
 
-      <button className="compare-button" onClick={handleCompare}>
-        Compare
-      </button>
+      <div className="button-group">
+        <button className="compare-button" onClick={handleCompare}>
+          Compare
+        </button>
+        <button className="reset-button" onClick={handleReset}>
+          Reset
+        </button>
+      </div>
 
       {comparisonData.length > 0 && (
         <div className="compare-table-scroll-wrapper">
@@ -178,7 +189,10 @@ export default function CompareSbomsPage() {
                           ? row.device1Value.map(
                               (pkg: SoftwarePackage, idx: number) => (
                                 <div className="package-entry" key={idx}>
-                                  {pkg.name} =&gt; {pkg.version}
+                                  <div className="package-item">
+                                    <span className="pkg-name">{pkg.name}</span>
+                                    <p className="pkg-version">{pkg.version}</p>
+                                  </div>
                                   {pkg.vulnerabilities &&
                                     pkg.vulnerabilities.length > 0 && (
                                       <>
@@ -243,7 +257,10 @@ export default function CompareSbomsPage() {
                           ? row.device2Value.map(
                               (pkg: SoftwarePackage, idx: number) => (
                                 <div className="package-entry" key={idx}>
-                                  {pkg.name} =&gt; {pkg.version}
+                                  <div className="package-item">
+                                    <span className="pkg-name">{pkg.name}</span>
+                                    <p className="pkg-version">{pkg.version}</p>
+                                  </div>
                                   {pkg.vulnerabilities &&
                                     pkg.vulnerabilities.length > 0 && (
                                       <>

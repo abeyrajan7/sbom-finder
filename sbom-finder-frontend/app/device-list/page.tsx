@@ -88,9 +88,9 @@ export default function DevicesPage() {
     }
   };
 
-  const toggleDropdown = (index: number) => {
-    setOpenDropdown((prev) => (prev === index ? null : index));
-  };
+//   const toggleDropdown = (index: number) => {
+//     setOpenDropdown((prev) => (prev === index ? null : index));
+//   };
 
   return (
     <div className="devices-container">
