@@ -292,7 +292,11 @@ export default function CompareSbomsPage() {
                         </td>
                       ))
                     : (["device1Value", "device2Value"] as const).map((key) => (
-                        <td key={key}>{row[key]}</td>
+                        <td key={key}>
+                          {Array.isArray(row[key])
+                            ? "Not Available"
+                            : row[key]}
+                        </td>
                       ))}
                 </tr>
               ))}
