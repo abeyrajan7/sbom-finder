@@ -20,7 +20,7 @@ interface Device {
 export default function DevicesPage() {
 //   const BASE_URL = 'https://sbom-finder-backend.onrender.com';
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-  const [devices, setDevices] = useState<Device[]>([]);\
+  const [devices, setDevices] = useState<Device[]>([]);
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayMessage, setOverlayMessage] = useState("Processing...");
   const [selectedDownloadId, setSelectedDownloadId] = useState<number | null>(null);
