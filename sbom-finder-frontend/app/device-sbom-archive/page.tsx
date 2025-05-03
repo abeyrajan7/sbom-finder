@@ -54,7 +54,7 @@ const SbomArchiveDownload: React.FC = () => {
                     setShowDialog(true);
                   }}
                 >
-                  {archive.version} {archive.isLatest ? '(latest)' : ''}
+                  {archive.version} {archive.isLatest ? '(latest)' : archive.version }
                 </div>
               ))}
             </div>

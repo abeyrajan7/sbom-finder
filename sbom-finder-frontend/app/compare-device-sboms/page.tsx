@@ -18,8 +18,10 @@ interface Vulnerability {
 interface SoftwarePackage {
   name: string;
   version: string;
+  supplierName?: string;
   vulnerabilities?: Vulnerability[];
   showVulns?: boolean;
+  showSupplier?: boolean;
 }
 
 interface ComparisonResult {
@@ -34,8 +36,8 @@ const fieldLabels: { [key: string]: string } = {
   category: "Category",
   operatingSystem: "Operating System",
   osVersion: "OS Version",
-  packages: "Packages",
   kernelVersion: "Kernel Version",
+  packages: "Packages",
   digitalFootprint: "Digital Footprint",
   externalReferences: "External References",
 };
@@ -65,7 +67,6 @@ export default function CompareSbomsPage() {
   const [device1Id, setDevice1Id] = useState("");
   const [device2Id, setDevice2Id] = useState("");
   const [comparisonData, setComparisonData] = useState<ComparisonResult[]>([]);
-//   const BASE_URL = "https://sbom-finder-backend.onrender.com";
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
   useEffect(() => {
@@ -78,9 +79,7 @@ export default function CompareSbomsPage() {
   const handleCompare = () => {
     if (!device1Id || !device2Id) return;
 
-    fetch(
-      `${BASE_URL}/api/devices/compare?device1Id=${device1Id}&device2Id=${device2Id}`
-    )
+    fetch(`${BASE_URL}/api/devices/compare?device1Id=${device1Id}&device2Id=${device2Id}`)
       .then((res) => res.json())
       .then((data) => {
         const fields = [
@@ -99,11 +98,11 @@ export default function CompareSbomsPage() {
           field,
           device1Value:
             field === "packages"
-              ? data.device1?.softwarePackages || []
+              ? data.device1?.softwarePackages.map((pkg: SoftwarePackage) => ({ ...pkg })) || []
               : data.device1?.[field] || "Not Found",
           device2Value:
             field === "packages"
-              ? data.device2?.softwarePackages || []
+              ? data.device2?.softwarePackages.map((pkg: SoftwarePackage) => ({ ...pkg })) || []
               : data.device2?.[field] || "Not Found",
         }));
 
@@ -116,6 +115,26 @@ export default function CompareSbomsPage() {
     setDevice1Id("");
     setDevice2Id("");
     setComparisonData([]);
+  };
+
+  const toggleField = (
+    deviceKey: "device1Value" | "device2Value",
+    pkgIdx: number,
+    field: "showSupplier" | "showVulns"
+  ) => {
+    setComparisonData((prev) =>
+      prev.map((r) => {
+        if (r.field === "packages" && Array.isArray(r[deviceKey])) {
+          return {
+            ...r,
+            [deviceKey]: r[deviceKey].map((pkg: SoftwarePackage, idx: number) =>
+              idx === pkgIdx ? { ...pkg, [field]: !pkg[field] } : pkg
+            ),
+          };
+        }
+        return r;
+      })
+    );
   };
 
   return (
@@ -157,12 +176,8 @@ export default function CompareSbomsPage() {
       </div>
 
       <div className="button-group">
-        <button className="compare-button" onClick={handleCompare}>
-          Compare
-        </button>
-        <button className="reset-button" onClick={handleReset}>
-          Reset
-        </button>
+        <button className="compare-button" onClick={handleCompare}>Compare</button>
+        <button className="reset-button" onClick={handleReset}>Reset</button>
       </div>
 
       {comparisonData.length > 0 && (
@@ -180,223 +195,103 @@ export default function CompareSbomsPage() {
                 <tr key={row.field}>
                   <td>{fieldLabels[row.field] || row.field}</td>
 
-                  {/* Custom rendering for Packages */}
-                  {row.field === "packages" ? (
-                    <>
-                      <td>
-                        {row.device1Value?.length &&
-                        Array.isArray(row.device1Value)
-                          ? row.device1Value.map(
-                              (pkg: SoftwarePackage, idx: number) => (
-                                <div className="package-entry" key={idx}>
-                                  <div className="package-item">
-                                    <span className="pkg-name">{pkg.name}</span>
-                                    <p className="pkg-version">{pkg.version}</p>
-                                  </div>
-                                  {pkg.vulnerabilities &&
-                                    pkg.vulnerabilities.length > 0 && (
-                                      <>
-                                        <button
-                                          className="vuln-toggle-button"
-                                          onClick={() =>
-                                            setComparisonData((prev) =>
-                                              prev.map((r) =>
-                                                r.field === "packages" &&
-                                                Array.isArray(r.device1Value)
-                                                  ? {
-                                                      ...r,
-                                                      device1Value:
-                                                        r.device1Value.map(
-                                                          (
-                                                            p: SoftwarePackage,
-                                                            i: number
-                                                          ) =>
-                                                            i === idx
-                                                              ? {
-                                                                  ...p,
-                                                                  showVulns:
-                                                                    !p.showVulns,
-                                                                }
-                                                              : p
-                                                        ),
-                                                    }
-                                                  : r
-                                              )
-                                            )
-                                          }
-                                        >
-                                          {pkg.showVulns
-                                            ? "Hide"
-                                            : "Show Vulnerabilities"}
-                                        </button>
-                                        {pkg.showVulns && (
-                                          <div className="vuln-tags">
-                                            {pkg.vulnerabilities.map(
-                                              (v: Vulnerability, i: number) => (
-                                                <span
-                                                  key={i}
-                                                  className={`vuln-tag ${v.severityLevel}`}
-                                                >
-                                                  {v.cveId}
-                                                </span>
-                                              )
-                                            )}
-                                          </div>
-                                        )}
-                                      </>
-                                    )}
+                  {row.field === "packages"
+                    ? ["device1Value", "device2Value"].map((key, colIdx) => (
+                        <td key={key}>
+                          {Array.isArray(row[key]) && row[key].length > 0 ? (
+                            (row[key] as SoftwarePackage[]).map((pkg, idx) => (
+                              <div className="package-entry" key={idx}>
+                                <div className="package-item">
+                                  <strong>
+                                    {pkg.name || "Unknown"}
+                                    {pkg.version && pkg.version !== "Unknown"
+                                      ? ` (>=${pkg.version})`
+                                      : " (Unknown Version)"}
+                                  </strong>
                                 </div>
-                              )
-                            )
-                          : "Not Available"}
-                      </td>
+                                <div className="button-row">
+                                  {pkg.supplierName && pkg.supplierName !== "Unknown" && (
+                                    <>
+                                      <button
+                                        className="vuln-toggle-button supplier-btn"
+                                        onClick={() =>
+                                          toggleField(
+                                            key as "device1Value" | "device2Value",
+                                            idx,
+                                            "showSupplier"
+                                          )
+                                        }
+                                      >
+                                        {pkg.showSupplier ? "Hide Supplier" : "Show Supplier"}
+                                      </button>
+                                      {pkg.showSupplier && (
+                                        <div className="supplier-display">{pkg.supplierName}</div>
+                                      )}
+                                    </>
+                                  )}
 
-                      <td>
-                        {row.device2Value?.length &&
-                        Array.isArray(row.device2Value)
-                          ? row.device2Value.map(
-                              (pkg: SoftwarePackage, idx: number) => (
-                                <div className="package-entry" key={idx}>
-                                  <div className="package-item">
-                                    <span className="pkg-name">{pkg.name}</span>
-                                    <p className="pkg-version">{pkg.version}</p>
-                                  </div>
-                                  {pkg.vulnerabilities &&
-                                    pkg.vulnerabilities.length > 0 && (
-                                      <>
-                                        <button
-                                          className="vuln-toggle-button"
-                                          onClick={() =>
-                                            setComparisonData((prev) =>
-                                              prev.map((r) =>
-                                                r.field === "packages" &&
-                                                Array.isArray(r.device2Value)
-                                                  ? {
-                                                      ...r,
-                                                      device2Value:
-                                                        r.device2Value.map(
-                                                          (
-                                                            p: SoftwarePackage,
-                                                            i: number
-                                                          ) =>
-                                                            i === idx
-                                                              ? {
-                                                                  ...p,
-                                                                  showVulns:
-                                                                    !p.showVulns,
-                                                                }
-                                                              : p
-                                                        ),
-                                                    }
-                                                  : r
-                                              )
-                                            )
-                                          }
-                                        >
-                                          {pkg.showVulns
-                                            ? "Hide"
-                                            : "Vulnerabilities"}
-                                        </button>
-                                        {pkg.showVulns && (
-                                          <div className="vuln-tags">
-                                            {pkg.vulnerabilities.map(
-                                              (v: Vulnerability, i: number) => (
-                                                <span
-                                                  key={i}
-                                                  className={`vuln-tag ${v.severityLevel}`}
-                                                >
-                                                  {v.cveId}
-                                                </span>
-                                              )
-                                            )}
-                                          </div>
-                                        )}
-                                      </>
-                                    )}
+                                  {pkg.vulnerabilities && pkg.vulnerabilities.length > 0 && (
+                                    <>
+                                      <button
+                                        className="vuln-toggle-button"
+                                        onClick={() =>
+                                          toggleField(
+                                            key as "device1Value" | "device2Value",
+                                            idx,
+                                            "showVulns"
+                                          )
+                                        }
+                                      >
+                                        {pkg.showVulns
+                                          ? "Hide Vulnerabilities"
+                                          : "Show Vulnerabilities"}
+                                      </button>
+                                      {pkg.showVulns && (
+                                        <div className="vuln-tags">
+                                          {pkg.vulnerabilities.map((v, i) => (
+                                            <span
+                                              key={i}
+                                              className={`vuln-tag ${v.severityLevel}`}
+                                            >
+                                              {v.cveId}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
                                 </div>
-                              )
-                            )
-                          : "Not Available"}
-                      </td>
-                    </>
-                  ) : row.field === "externalReferences" ? (
-                    <>
-                      <td>
-                        {isExternalReferenceArray(row.device1Value) ? (
-                          row.device1Value.map((ref, i) => (
-                            <div key={i}>
-                              <strong>{ref.referenceCategory}</strong>:{" "}
-                              {ref.referenceType} →{" "}
-                              <a
-                                href={ref.referenceLocator}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                {ref.referenceLocator}
-                              </a>
-                            </div>
-                          ))
-                        ) : (
-                          <span>
-                            {typeof row.device1Value === "string"
-                              ? row.device1Value
-                              : "Not Available"}
-                          </span>
-                        )}
-                      </td>
-                      {/* Device 2 value */}
-                      <td>
-                        {isExternalReferenceArray(row.device2Value) ? (
-                          row.device2Value.map((ref, i) => (
-                            <div key={i}>
-                              <strong>{ref.referenceCategory}</strong>:{" "}
-                              {ref.referenceType} →{" "}
-                              <a
-                                href={ref.referenceLocator}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                {ref.referenceLocator}
-                              </a>
-                            </div>
-                          ))
-                        ) : (
-                          <span>
-                            {typeof row.device2Value === "string"
-                              ? row.device2Value
-                              : "Not Available"}
-                          </span>
-                        )}
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td>
-                        {Array.isArray(row.device1Value)
-                          ? row.device1Value.length > 0
-                            ? row.device1Value.map((pkg, i) => (
-                                <div key={i}>
-                                  {(pkg as SoftwarePackage).name} =&gt;{" "}
-                                  {(pkg as SoftwarePackage).version}
-                                </div>
-                              ))
-                            : "Not Available"
-                          : row.device1Value}
-                      </td>
-                      <td>
-                        {Array.isArray(row.device2Value)
-                          ? row.device2Value.length > 0
-                            ? row.device2Value.map((pkg, i) => (
-                                <div key={i}>
-                                  {(pkg as SoftwarePackage).name} =&gt;{" "}
-                                  {(pkg as SoftwarePackage).version}
-                                </div>
-                              ))
-                            : "Not Available"
-                          : row.device2Value}
-                      </td>
-                    </>
-                  )}
+                              </div>
+                            ))
+                          ) : (
+                            "Not Available"
+                          )}
+                        </td>
+                      ))
+                    : row.field === "externalReferences"
+                    ? ["device1Value", "device2Value"].map((key) => (
+                        <td key={key}>
+                          {isExternalReferenceArray(row[key]) ? (
+                            row[key].map((ref, i) => (
+                              <div key={i}>
+                                <strong>{ref.referenceCategory}</strong>: {ref.referenceType} → {" "}
+                                <a
+                                  href={ref.referenceLocator}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {ref.referenceLocator}
+                                </a>
+                              </div>
+                            ))
+                          ) : (
+                            <span>
+                              {typeof row[key] === "string" ? row[key] : "Not Available"}
+                            </span>
+                          )}
+                        </td>
+                      ))
+                    : ["device1Value", "device2Value"].map((key) => <td key={key}>{row[key]}</td>)}
                 </tr>
               ))}
             </tbody>

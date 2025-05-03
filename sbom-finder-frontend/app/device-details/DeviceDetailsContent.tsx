@@ -49,6 +49,7 @@ export default function DeviceDetailsContent() {
     os: true,
     footprint: false,
     packages: false,
+    suppliers: false,
     vulnerabilities: false,
     externalReferences: false,
   });
@@ -69,7 +70,11 @@ export default function DeviceDetailsContent() {
   }, [device_id]);
 
   if (!deviceDetails) return <div>Loading...</div>;
-
+  const suppliers = [
+    ...new Set(deviceDetails.softwarePackages
+      .map(pkg => pkg.supplierName)
+      .filter(name => !!name && name !== "Unknown" && name !== "Unknown Supplier"))
+  ];
   return (
     <>
       {/* Back button */}
@@ -139,6 +144,26 @@ export default function DeviceDetailsContent() {
           )}
         </section>
 
+        {/* Section 5: Suppliers Involved */}
+        <section className="device-section" onClick={() => toggleSection("suppliers")}>
+          <div className="section-header">
+            <h2>Suppliers Involved</h2>
+            <button>{openSections.suppliers ? "−" : "+"}</button>
+          </div>
+          {openSections.suppliers && (
+            suppliers.length > 0 ? (
+              <div className="supplier-list">
+                {suppliers.map((name, idx) => (
+                  <span className="supplier-tag" key={idx}>
+                    {name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p>Not Available</p>
+            )
+          )}
+        </section>
         {/* Section 5: Vulnerabilities */}
         <section className="device-section" onClick={() => toggleSection("vulnerabilities")}>
           <div className="section-header">
@@ -179,7 +204,11 @@ export default function DeviceDetailsContent() {
                     <p><strong>Category:</strong> {ref.referenceCategory}</p>
                     <p><strong>Type:</strong> {ref.referenceType}</p>
                     {ref.referenceLocator.startsWith("http") ? (
-                      <p><strong>Link:</strong> <a href={ref.referenceLocator} target="_blank" rel="noopener noreferrer">View</a></p>
+                      <p><strong>Link:</strong>
+                      <a href={ref.referenceLocator} target="_blank" rel="noopener noreferrer">
+                      {ref.referenceLocator.split("/").pop()}
+                      </a>
+                      </p>
                     ) : (
                       <p><strong>Locator:</strong> {ref.referenceLocator}</p>
                     )}

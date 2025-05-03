@@ -28,7 +28,9 @@
 
 .package-grid,
 .vulnerability-grid,
-.reference-grid {
+.reference-grid,
+.supplier-grid
+ {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
@@ -141,4 +143,23 @@
   background-color: #fef3c7;
   color: #92400e;
   border: 1px solid #fcd34d;
+}
+
+.supplier-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.supplier-tag {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-block;
+  white-space: nowrap;
 }
