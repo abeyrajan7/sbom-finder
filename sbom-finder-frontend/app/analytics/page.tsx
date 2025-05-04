@@ -129,7 +129,7 @@ export default function AnalyticsPage() {
         setVulnerabilityCategoryData(vulnCategory);
         setTopVulnerablePackages(topPackages);
         setSeverityData(severity);
-        setVulnerableSuppliers(vulnSuppliers.filter(s => s.vulns > 0));
+        setVulnerableSuppliers(vulnSuppliers.filter((s: VulnerableSupplier) => s.vulns > 0));
       } catch (error) {
         console.error("Error fetching analytics data:", error);
       } finally {
