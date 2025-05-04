@@ -21,7 +21,7 @@ const SupplierTooltip = ({ active, payload }: {active?: boolean; payload?: { pay
     const data = payload[0].payload;
     return (
       <div className="custom-tooltip">
-        <p><strong>{data.name}</strong></p>
+        <p><strong>{data.supplier}</strong></p>
         <p style={{ marginBottom: "0.25rem" }}><strong>Packages:</strong> {data.packageCount}</p>
         <ul style={{ paddingLeft: "1rem", margin: 0 }}>
           {data.packages?.slice(0, 5).map((pkg: { name: string; version: string }, idx: number) => (
