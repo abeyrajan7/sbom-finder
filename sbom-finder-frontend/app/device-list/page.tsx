@@ -74,7 +74,7 @@ export default function DevicesPage() {
               });
 
         if (response.ok) {
-          fetchDevices();
+          window.location.reload();
         } else {
           alert("Failed to delete SBOM.");
         }
