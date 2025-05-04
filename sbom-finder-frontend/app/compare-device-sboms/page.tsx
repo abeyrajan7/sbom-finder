@@ -269,28 +269,26 @@ export default function CompareSbomsPage() {
                         </td>
                       ))
                     : row.field === "externalReferences"
-                    ? (["device1Value", "device2Value"] as const).map((key) => (
-                        <td key={key}>
-                          {isExternalReferenceArray(row[key]) ? (
-                            row[key].map((ref, i) => (
-                              <div key={i}>
-                                <strong>{ref.referenceCategory}</strong>: {ref.referenceType} → {" "}
-                                <a
-                                  href={ref.referenceLocator}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  {ref.referenceLocator}
-                                </a>
-                              </div>
-                            ))
-                          ) : (
-                            <span>
-                              {typeof row[key] === "string" ? row[key] : "Not Available"}
-                            </span>
-                          )}
-                        </td>
-                      ))
+                        ? (["device1Value", "device2Value"] as const).map((key) => (
+                            <td key={key}>
+                              {isExternalReferenceArray(row[key]) && row[key].length > 0 ? (
+                                (row[key] as ExternalReference[]).map((ref, i) => (
+                                  <div key={i}>
+                                    <strong>{ref.referenceCategory}</strong>: {ref.referenceType} →{" "}
+                                    <a
+                                      href={ref.referenceLocator}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      {ref.referenceLocator}
+                                    </a>
+                                  </div>
+                                ))
+                              ) : (
+                                <span>Not Available</span>
+                              )}
+                            </td>
+                        ))
                     : (["device1Value", "device2Value"] as const).map((key) => (
                         <td key={key}>
                           {Array.isArray(row[key])

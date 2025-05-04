@@ -89,6 +89,10 @@
     color: #555;
   }
 
+  .analytics-page-title{
+    color: grey;
+  }
+
   .spinner {
     border: 6px solid #f3f3f3; /* Light grey */
     border-top: 6px solid #3498db; /* Blue */

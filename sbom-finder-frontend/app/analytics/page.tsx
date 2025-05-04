@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="analytics-container">
-      <h1>SBOM Analytics</h1>
+      <h1 className="analytics-page-title">SBOM Analytics</h1>
 
       <div className="analytics-tabs">
         {["category", "operatingSystem", "supplier", "manufacturer", "vulnerabilities"].map((tab) => (
