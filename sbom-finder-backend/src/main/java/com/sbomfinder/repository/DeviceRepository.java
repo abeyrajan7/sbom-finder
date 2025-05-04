@@ -13,7 +13,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     //for fuzzy search
     @Query(value = "SELECT * FROM devices d WHERE " +
             "(:query IS NULL OR :query = '' OR " +
-            "similarity(d.device_name, :query) > 0.3 OR " +
+            "similarity(d.device_name, :query) > 0.1 OR " +
             "similarity(d.manufacturer, :query) > 0.3 OR " +
             "similarity(d.operating_system, :query) > 0.3 OR " +
             "similarity(d.kernel_version, :query) > 0.3) AND " +
