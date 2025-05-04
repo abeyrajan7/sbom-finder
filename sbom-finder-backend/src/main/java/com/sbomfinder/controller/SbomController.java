@@ -152,15 +152,21 @@ public class SbomController {
             Set<Long> checkedSupplierIds = new HashSet<>();
 
             for (SoftwarePackage pkg : packages) {
+                // Clear vulnerability links (join table)
+                pkg.getVulnerabilities().clear();
+                softwarePackageRepository.save(pkg);
+
+                // Handle supplier deletion
                 Supplier supplier = pkg.getSupplier();
                 if (supplier != null && !checkedSupplierIds.contains(supplier.getId())) {
                     long count = softwarePackageRepository.countBySupplierId(supplier.getId());
                     if (count <= 1) {
-                        supplierRepository.deleteById(supplier.getId()); // Use deleteById instead of delete()
+                        supplierRepository.deleteById(supplier.getId());
                     }
                     checkedSupplierIds.add(supplier.getId());
                 }
             }
+
             // 1. Delete Software Packages linked to this Device
             softwarePackageRepository.deleteByDeviceId(deviceId);
 

@@ -105,7 +105,7 @@ public class SoftwarePackage {
 
 
 
-    // ✅ Setters
+    //  Setters
     public void setId(Long id) { this.id = id; }
     public void setSbom(Sbom sbom) { this.sbom = sbom; }
     public void setName(String name) { this.name = name; }
@@ -117,6 +117,5 @@ public class SoftwarePackage {
     public void setCopyrightText(String copyrightText) { this.copyrightText = copyrightText; }
     public void setComponentType(String componentType) { this.componentType = componentType; } // ✅ New Field
     public void setPurl(String purl) { this.purl = purl; }
-    public void setVulnerabilities(List<Vulnerability> vulnerabilities) { this.vulnerabilities = new HashSet<>(vulnerabilities); }
     public void setDevice(Device device) { this.device = device; }
 }
