@@ -12,12 +12,17 @@ import com.sbomfinder.model.SbomArchive;
 import org.springframework.stereotype.Service;
 import com.sbomfinder.model.Sbom;
 import com.sbomfinder.repository.SbomArchiveRepository;
+import com.sbomfinder.repository.SoftwarePackageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class SbomArchiveService {
+    @Autowired
+    private SoftwarePackageRepository softwarePackageRepository;
+
     private final SbomArchiveRepository sbomArchiveRepository;
 
     public SbomArchiveService(SbomArchiveRepository sbomArchiveRepository) {
@@ -34,7 +39,7 @@ public class SbomArchiveService {
             }
 
             // Generate JSON content
-            String jsonContent = generateJsonSbomContent(device, sbom, softwarePackages);
+            String jsonContent = generateJsonSbomContent(device, sbom);
 
             // Save new archive
             SbomArchive newArchive = new SbomArchive();
@@ -48,16 +53,20 @@ public class SbomArchiveService {
         }
     }
 
-    public String generateJsonSbomContent(Device device, Sbom sbom, List<SoftwarePackage> packages) throws Exception {
+    public String generateJsonSbomContent(Device device, Sbom sbom) throws Exception {
+        List<SoftwarePackage> packages = softwarePackageRepository.findAllByDeviceIdWithSupplier(device.getId());
         UnifiedSbomData sbomData = new UnifiedSbomData();
         sbomData.setDeviceName(device.getDeviceName());
         sbomData.setVersion(sbom.getVersion());
-        if (packages == null) {
-            packages = new ArrayList<>();
-        }
         List<UnifiedComponent> components = packages.stream()
-                .map(pkg -> new UnifiedComponent(pkg.getName(), pkg.getVersion(),
-                        pkg.getPurl() != null ? pkg.getPurl() : "NOASSERTION"))
+                .map(pkg -> {
+                    UnifiedComponent comp = new UnifiedComponent();
+                    comp.setName(pkg.getName());
+                    comp.setVersion(pkg.getVersion());
+                    comp.setPurl(pkg.getPurl() != null ? pkg.getPurl() : "NOASSERTION");
+                    comp.setSupplier(pkg.getSupplier() != null ? pkg.getSupplier().getName() : "NOASSERTION");
+                    return comp;
+                })
                 .collect(Collectors.toList());
         sbomData.setComponents(components);
 
@@ -92,6 +101,7 @@ public class SbomArchiveService {
                     map.put("type", "library");
                     map.put("name", comp.getName());
                     map.put("version", comp.getVersion());
+                    map.put("supplier", comp.getSupplier() != null ? comp.getSupplier() : "NOASSERTION"); // ✅ Added this line
                     map.put("purl", comp.getPurl() != null ? comp.getPurl() : "NOASSERTION");
                     return map;
                 })
@@ -127,6 +137,7 @@ public class SbomArchiveService {
         return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(sbom);
     }
 
+
     public String generateSpdxJson(UnifiedSbomData sbomData) throws Exception {
         Map<String, Object> sbom = new LinkedHashMap<>();
         sbom.put("spdxVersion", "SPDX-2.2");
@@ -138,11 +149,13 @@ public class SbomArchiveService {
                     Map<String, Object> map = new LinkedHashMap<>();
                     map.put("SPDXID", "SPDXRef-Package-" + pkg.getName().replaceAll("[^a-zA-Z0-9]", ""));
                     map.put("name", pkg.getName());
+                    map.put("supplier", pkg.getSupplier() != null ? pkg.getSupplier() : "NOASSERTION"); // ✅ Added this line
                     map.put("versionInfo", pkg.getVersion() != null ? pkg.getVersion() : "NOASSERTION");
                     map.put("downloadLocation", "NOASSERTION");
                     return map;
                 })
                 .collect(Collectors.toList());
+
         sbom.put("packages", packages);
 
         return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(sbom);

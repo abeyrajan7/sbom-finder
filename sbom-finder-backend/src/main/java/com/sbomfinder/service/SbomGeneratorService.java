@@ -220,27 +220,6 @@ public class SbomGeneratorService {
             return Base64.getEncoder().encodeToString(hashBytes);
         }
 
-//    private String inferSupplierFromNamespace(String name) {
-//        Map<String, String> knownSuppliers = Map.ofEntries(
-//                Map.entry("com.unity", "Unity Technologies"),
-//                Map.entry("com.google", "Google"),
-//                Map.entry("org.apache", "Apache Software Foundation"),
-//                Map.entry("com.facebook", "Meta (Facebook)"),
-//                Map.entry("com.microsoft", "Microsoft"),
-//                Map.entry("org.springframework", "Spring Framework Team"),
-//                Map.entry("io.netty", "Netty Project"),
-//                Map.entry("org.hibernate", "Hibernate Team")
-//        );
-//
-//        for (String prefix : knownSuppliers.keySet()) {
-//            if (name.startsWith(prefix)) {
-//                return knownSuppliers.get(prefix);
-//            }
-//        }
-//
-//        return "Unknown";
-//    }
-
     //to extract the supplier name
     public String inferSupplier(String name, String version, String ecosystem) {
         try {
@@ -297,7 +276,7 @@ public class SbomGeneratorService {
 
         // 4. Archive the new SBOM
         try {
-            String jsonContent = sbomArchiveService.generateJsonSbomContent(device, savedSbom, newPackages);
+            String jsonContent = sbomArchiveService.generateJsonSbomContent(device, savedSbom);
             SbomArchive newArchive = new SbomArchive();
             newArchive.setDevice(device);
             newArchive.setVersion(savedSbom.getVersion());

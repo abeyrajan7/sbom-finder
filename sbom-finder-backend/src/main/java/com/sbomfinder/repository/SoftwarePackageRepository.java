@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.sbomfinder.model.Supplier;
 import com.sbomfinder.repository.SupplierRepository;
 import com.sbomfinder.model.Supplier;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -16,6 +17,9 @@ public interface SoftwarePackageRepository extends JpaRepository<SoftwarePackage
 
     @Query("SELECT sp FROM SoftwarePackage sp WHERE sp.sbom.id = :sbomId AND LOWER(sp.name) LIKE %:keyword%")
     List<SoftwarePackage> findPackagesBySbomIdAndKeyword(Long sbomId, String keyword);
+
+    @Query("SELECT p FROM SoftwarePackage p LEFT JOIN FETCH p.supplier WHERE p.device.id = :deviceId")
+    List<SoftwarePackage> findAllByDeviceIdWithSupplier(@Param("deviceId") Long deviceId);
 
     default List<SoftwarePackage> findFirmwareBySbomId(Long sbomId) {
         return findPackagesBySbomIdAndKeyword(sbomId, "firmware");

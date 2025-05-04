@@ -4,6 +4,7 @@ public class UnifiedComponent {
     private String name;
     private String version;
     private String purl;
+    private String supplier;
 
     public UnifiedComponent() {}
 
@@ -36,5 +37,13 @@ public class UnifiedComponent {
 
     public void setPurl(String purl) {
         this.purl = purl;
+    }
+
+    public String getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(String supplier) {
+        this.supplier = supplier;
     }
 }
