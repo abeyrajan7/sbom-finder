@@ -19,20 +19,7 @@ export default function UploadSBOMPage() {
   const [loading, setLoading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { setDevices } = useDeviceStore();
   const router = useRouter();
-
-  interface Device {
-    name: string;
-    deviceId: number;
-    manufacturer: string;
-    category: string;
-    operatingSystem: string;
-    osVersion: string;
-    kernelVersion: string;
-    digitalFootprint: string;
-    sbomId: number;
-  }
 
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     event.preventDefault();
