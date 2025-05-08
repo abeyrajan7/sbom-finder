@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import "./devices.css";
 import Link from "next/link";
+import { useDeviceStore } from "../../store/useDeviceStore";
 import SearchFilterBar from "../../components/SearchFilterBar";
 
 interface Device {
@@ -18,26 +19,37 @@ interface Device {
 }
 
 export default function DevicesPage() {
-//   const BASE_URL = 'https://sbom-finder-backend.onrender.com';
-  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-  const [devices, setDevices] = useState<Device[]>([]);
+  //   const BASE_URL = 'https://sbom-finder-backend.onrender.com';
+  const BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  // const [devices, setDevices] = useState<Device[]>([]);
+  const { devices, setDevices } = useDeviceStore();
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayMessage, setOverlayMessage] = useState("Processing...");
-  const [selectedDownloadId, setSelectedDownloadId] = useState<number | null>(null);
+  const [selectedDownloadId, setSelectedDownloadId] = useState<number | null>(
+    null
+  );
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
-  const [footprintModal, setFootprintModal] = useState<{ open: boolean, content: string }>({
+  const [footprintModal, setFootprintModal] = useState<{
+    open: boolean;
+    content: string;
+  }>({
     open: false,
-    content: ''
+    content: "",
   });
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/devices/all`)
-      .then((res) => res.json())
-      .then((data) => {
-        const sortedData = data.sort((a: Device, b: Device) => b.sbomId - a.sbomId); // descending by sbomId
-        setDevices(sortedData);
-      })
-      .catch((err) => console.error("Error fetching devices:", err));
+    if (devices.length === 0) {
+      fetch(`${BASE_URL}/api/devices/all`)
+        .then((res) => res.json())
+        .then((data) => {
+          const sortedData = data.sort(
+            (a: Device, b: Device) => b.sbomId - a.sbomId
+          ); // descending by sbomId
+          setDevices(sortedData);
+        })
+        .catch((err) => console.error("Error fetching devices:", err));
+    }
   }, []);
 
   const handleSearch = async (params: {
@@ -45,7 +57,7 @@ export default function DevicesPage() {
     manufacturer?: string;
     operatingSystem?: string;
   }) => {
-    const { query = '', manufacturer = '', operatingSystem = '' } = params; // destructure here
+    const { query = "", manufacturer = "", operatingSystem = "" } = params; // destructure here
 
     const res = await fetch(
       `${BASE_URL}/api/devices/search?query=${query}&manufacturer=${manufacturer}&operatingSystem=${operatingSystem}`
@@ -64,17 +76,20 @@ export default function DevicesPage() {
     }
   };
 
-  const handleDelete = async (deviceId : number) => {
+  const handleDelete = async (deviceId: number) => {
     if (confirm("Are you sure you want to delete this SBOM?")) {
       try {
-          setOverlayMessage("Deletion in progress... Please do not close or switch tabs. This may take a few moments.");
-          setShowOverlay(true);
-          const response = await fetch(`${BASE_URL}/api/sboms/${deviceId}`, {
-              method: "DELETE",
-              });
+        setOverlayMessage(
+          "Deletion in progress... Please do not close or switch tabs. This may take a few moments."
+        );
+        setShowOverlay(true);
+        const response = await fetch(`${BASE_URL}/api/sboms/${deviceId}`, {
+          method: "DELETE",
+        });
 
         if (response.ok) {
-          window.location.reload();
+          const updatedDevices = devices.filter((d: Device) => d.deviceId !== deviceId);
+          setDevices(updatedDevices);
         } else {
           alert("Failed to delete SBOM.");
         }
@@ -82,7 +97,7 @@ export default function DevicesPage() {
         console.error("Error deleting device:", error);
         alert("An error occurred while deleting.");
       } finally {
-          setShowOverlay(false);
+        setShowOverlay(false);
       }
     }
   };
@@ -108,12 +123,19 @@ export default function DevicesPage() {
           <tbody>
             {devices.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: "center", padding: "1rem", color: "gray" }}>
+                <td
+                  colSpan={8}
+                  style={{
+                    textAlign: "center",
+                    padding: "1rem",
+                    color: "gray",
+                  }}
+                >
                   No SBOM files found.
                 </td>
               </tr>
             ) : (
-              devices.map((device, index) => (
+              devices.map((device : Device, index : number) => (
                 <tr key={index}>
                   <td>
                     <Link
@@ -136,7 +158,10 @@ export default function DevicesPage() {
                       <button
                         className="view-btn"
                         onClick={() =>
-                          setFootprintModal({ open: true, content: device.digitalFootprint })
+                          setFootprintModal({
+                            open: true,
+                            content: device.digitalFootprint,
+                          })
                         }
                       >
                         View
@@ -161,8 +186,6 @@ export default function DevicesPage() {
                       >
                         Download SBOM
                       </button>
-
-
                     </div>
                   </td>
                 </tr>
@@ -172,8 +195,6 @@ export default function DevicesPage() {
         </table>
       </div>
 
-
-
       {showDownloadDialog && selectedDownloadId && (
         <div className="download-dialog">
           <div className="dialog-box">
@@ -181,30 +202,36 @@ export default function DevicesPage() {
             <button
               className="download-btn"
               onClick={() => {
-                    window.open(`${BASE_URL}/api/devices/download/${selectedDownloadId}?format=cyclonedx`, '_blank')
-                    setShowDownloadDialog(false);
-                }
-              }
+                window.open(
+                  `${BASE_URL}/api/devices/download/${selectedDownloadId}?format=cyclonedx`,
+                  "_blank"
+                );
+                setShowDownloadDialog(false);
+              }}
             >
               CycloneDX
             </button>
             <button
               className="download-btn"
-              onClick={() =>{
-                    window.open(`${BASE_URL}/api/devices/download/${selectedDownloadId}?format=spdx`, '_blank')
-                    setShowDownloadDialog(false);
-                }
-              }
+              onClick={() => {
+                window.open(
+                  `${BASE_URL}/api/devices/download/${selectedDownloadId}?format=spdx`,
+                  "_blank"
+                );
+                setShowDownloadDialog(false);
+              }}
             >
               SPDX
             </button>
-            <button className="cancel-button" onClick={() => setShowDownloadDialog(false)}>
+            <button
+              className="cancel-button"
+              onClick={() => setShowDownloadDialog(false)}
+            >
               Cancel
             </button>
           </div>
         </div>
       )}
-
 
       {showOverlay && (
         <div className="upload-overlay">
@@ -214,20 +241,20 @@ export default function DevicesPage() {
         </div>
       )}
 
-  {footprintModal.open && (
-          <div className="modal-overlay">
-            <div className="modal-box">
-              <h3>Digital Footprint</h3>
-              <pre className="footprint-content">{footprintModal.content}</pre>
-              <button className="close-btn" onClick={() => setFootprintModal({ open: false, content: '' })}>
-                Close
-              </button>
-            </div>
+      {footprintModal.open && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h3>Digital Footprint</h3>
+            <pre className="footprint-content">{footprintModal.content}</pre>
+            <button
+              className="close-btn"
+              onClick={() => setFootprintModal({ open: false, content: "" })}
+            >
+              Close
+            </button>
           </div>
-        )}
-
-
-
+        </div>
+      )}
     </div>
   );
 }
