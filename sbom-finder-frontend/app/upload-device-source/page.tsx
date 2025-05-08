@@ -2,7 +2,6 @@
 
 import React, { useState, useRef } from "react";
 import "./upload.css";
-import { useDeviceStore } from "../../store/useDeviceStore";
 import { useRouter } from "next/navigation";
 
 export default function UploadSBOMPage() {
