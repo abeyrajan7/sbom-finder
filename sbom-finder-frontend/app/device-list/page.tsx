@@ -1,3 +1,4 @@
+// devucesPage
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -39,13 +40,16 @@ export default function DevicesPage() {
   });
 
   useEffect(() => {
-    if (devices.length === 0) {
+    const params = new URLSearchParams(window.location.search);
+    const highlight = params.get("highlight");
+
+    if (highlight === "latest" || devices.length === 0) {
       fetch(`${BASE_URL}/api/devices/all`)
         .then((res) => res.json())
         .then((data) => {
           const sortedData = data.sort(
             (a: Device, b: Device) => b.sbomId - a.sbomId
-          ); // descending by sbomId
+          );
           setDevices(sortedData);
         })
         .catch((err) => console.error("Error fetching devices:", err));
@@ -88,7 +92,9 @@ export default function DevicesPage() {
         });
 
         if (response.ok) {
-          const updatedDevices = devices.filter((d: Device) => d.deviceId !== deviceId);
+          const updatedDevices = devices.filter(
+            (d: Device) => d.deviceId !== deviceId
+          );
           setDevices(updatedDevices);
         } else {
           alert("Failed to delete SBOM.");
@@ -135,7 +141,7 @@ export default function DevicesPage() {
                 </td>
               </tr>
             ) : (
-              devices.map((device : Device, index : number) => (
+              devices.map((device: Device, index: number) => (
                 <tr key={index}>
                   <td>
                     <Link

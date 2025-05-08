@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import "./upload.css";
 import { useDeviceStore } from "../../store/useDeviceStore";
+import { useRouter } from "next/navigation";
 
 export default function UploadSBOMPage() {
   const BASE_URL =
@@ -19,6 +20,7 @@ export default function UploadSBOMPage() {
   const [showOverlay, setShowOverlay] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setDevices } = useDeviceStore();
+  const router = useRouter();
 
   interface Device {
     name: string;
@@ -71,14 +73,8 @@ export default function UploadSBOMPage() {
       });
 
       if (response.ok) {
-        const updatedDevices = await fetch(`${BASE_URL}/api/devices/all`)
-          .then((res) => res.json())
-          .then((data) =>
-            data.sort((a: Device, b: Device) => b.sbomId - a.sbomId)
-          );
-        setDevices(updatedDevices);
-
         resetForm();
+        router.push("/device-list?highlight=latest");
       } else {
         const errorText = await response.text();
         setError(errorText || "Upload failed.");

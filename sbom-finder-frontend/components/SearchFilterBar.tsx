@@ -42,6 +42,19 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch, onReset }) => {
         if (!names.includes("Unknown OS")) names.push("Unknown OS");
         setOsList(names);
       });
+
+    // Reset filters when tab becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleReset(); // reuse your existing function
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const handleSubmit = () => {
