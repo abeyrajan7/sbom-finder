@@ -2,9 +2,11 @@
 
 import React, { useState, useRef } from "react";
 import "./upload.css";
+import { useDeviceStore } from "../../store/useDeviceStore";
 
 export default function UploadSBOMPage() {
-  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  const BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const [file, setFile] = useState<File | null>(null);
   const [manufacturer, setManufacturer] = useState("");
   const [category, setCategory] = useState("");
@@ -16,19 +18,29 @@ export default function UploadSBOMPage() {
   const [loading, setLoading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { setDevices } = useDeviceStore();
+
+  interface Device {
+    name: string;
+    deviceId: number;
+    manufacturer: string;
+    category: string;
+    operatingSystem: string;
+    osVersion: string;
+    kernelVersion: string;
+    digitalFootprint: string;
+    sbomId: number;
+  }
 
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     event.preventDefault();
-    event.returnValue = "Upload is in progress. Are you sure you want to leave?";
+    event.returnValue =
+      "Upload is in progress. Are you sure you want to leave?";
   };
-  
+
   const handleUpload = async () => {
-
-      setShowOverlay(true);
-      window.addEventListener("beforeunload", handleBeforeUnload);
-
-
-
+    setShowOverlay(true);
+    window.addEventListener("beforeunload", handleBeforeUnload);
     setError(null);
 
     if (!file) {
@@ -52,7 +64,6 @@ export default function UploadSBOMPage() {
     formData.append("osVersion", osVersion || "Unknown Version");
     formData.append("kernelVersion", kernelVersion || "Unknown Kernel");
 
-
     try {
       const response = await fetch(`${BASE_URL}/api/sboms/upload-source`, {
         method: "POST",
@@ -60,6 +71,13 @@ export default function UploadSBOMPage() {
       });
 
       if (response.ok) {
+        const updatedDevices = await fetch(`${BASE_URL}/api/devices/all`)
+          .then((res) => res.json())
+          .then((data) =>
+            data.sort((a: Device, b: Device) => b.sbomId - a.sbomId)
+          );
+        setDevices(updatedDevices);
+
         resetForm();
       } else {
         const errorText = await response.text();
@@ -74,7 +92,6 @@ export default function UploadSBOMPage() {
       setLoading(false);
     }
   };
-
 
   const resetForm = () => {
     setFile(null);
@@ -170,7 +187,9 @@ export default function UploadSBOMPage() {
           <div className="upload-overlay">
             <div className="upload-overlay-content">
               <h3>Uploading...</h3>
-              <p>Please do not close or switch tabs. This may take a few minutes.</p>
+              <p>
+                Please do not close or switch tabs. This may take a few minutes.
+              </p>
             </div>
           </div>
         )}
