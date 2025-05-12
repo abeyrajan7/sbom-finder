@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import "./SearchFilterBar.css";
+
+export type SearchFilterBarRef = {
+    resetFilters: () => void;
+  };
 
 type Props = {
   onSearch: (params: {
@@ -15,7 +19,7 @@ type AnalyticsItem = {
   sboms: number;
 };
 
-const SearchFilterBar: React.FC<Props> = ({ onSearch, onReset }) => {
+const SearchFilterBar = forwardRef<SearchFilterBarRef, Props>(({ onSearch, onReset }, ref) => {
   //     const BASE_URL = 'https://sbom-finder-backend.onrender.com';
   const BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
@@ -24,6 +28,17 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch, onReset }) => {
   const [operatingSystem, setOperatingSystem] = useState("");
   const [manufacturersList, setManufacturersList] = useState<string[]>([]);
   const [osList, setOsList] = useState<string[]>([]);
+
+  useImperativeHandle(ref, () => ({
+    resetFilters() {
+      setQuery("");
+      setManufacturer("");
+      setOperatingSystem("");
+    },
+  }));
+
+
+
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/analytics/manufacturers`)
@@ -44,17 +59,7 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch, onReset }) => {
       });
 
     // Reset filters when tab becomes visible again
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        handleReset(); // reuse your existing function
-      }
-    };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
   }, []);
 
   const handleSubmit = () => {
@@ -117,6 +122,7 @@ const SearchFilterBar: React.FC<Props> = ({ onSearch, onReset }) => {
       </button>
     </div>
   );
-};
+});
 
 export default SearchFilterBar;
+

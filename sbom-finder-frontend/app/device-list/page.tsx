@@ -1,11 +1,13 @@
 // devucesPage
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./devices.css";
 import Link from "next/link";
 import { useDeviceStore } from "../../store/useDeviceStore";
+import { SearchFilterBarRef } from "../../components/SearchFilterBar";
 import SearchFilterBar from "../../components/SearchFilterBar";
+import { usePathname } from "next/navigation";
 
 interface Device {
   name: string;
@@ -24,6 +26,8 @@ export default function DevicesPage() {
   const BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   // const [devices, setDevices] = useState<Device[]>([]);
+  const searchFilterRef = useRef<SearchFilterBarRef>(null);
+  const pathname = usePathname();
   const { devices, setDevices } = useDeviceStore();
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayMessage, setOverlayMessage] = useState("Processing...");
@@ -38,6 +42,13 @@ export default function DevicesPage() {
     open: false,
     content: "",
   });
+
+  useEffect(() => {
+    if (pathname === "/device-list") {
+      fetchDevices(); // Reset device list
+      searchFilterRef.current?.resetFilters(); // Clear filter inputs
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -55,6 +66,10 @@ export default function DevicesPage() {
         .catch((err) => console.error("Error fetching devices:", err));
     }
   }, []);
+
+
+
+
 
   const handleSearch = async (params: {
     query?: string;
@@ -110,8 +125,7 @@ export default function DevicesPage() {
 
   return (
     <div className="devices-container">
-      <SearchFilterBar onSearch={handleSearch} onReset={fetchDevices} />
-
+      <SearchFilterBar ref={searchFilterRef} onSearch={handleSearch} onReset={fetchDevices} />
       <div className="table-scroll-wrapper">
         <table className="devices-table">
           <thead>
@@ -263,4 +277,5 @@ export default function DevicesPage() {
       )}
     </div>
   );
+
 }
