@@ -20,7 +20,6 @@ type AnalyticsItem = {
 };
 
 const SearchFilterBar = forwardRef<SearchFilterBarRef, Props>(({ onSearch, onReset }, ref) => {
-  //     const BASE_URL = 'https://sbom-finder-backend.onrender.com';
   const BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const [query, setQuery] = useState("");
@@ -36,9 +35,6 @@ const SearchFilterBar = forwardRef<SearchFilterBarRef, Props>(({ onSearch, onRes
       setOperatingSystem("");
     },
   }));
-
-
-
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/analytics/manufacturers`)
@@ -123,6 +119,7 @@ const SearchFilterBar = forwardRef<SearchFilterBarRef, Props>(({ onSearch, onRes
     </div>
   );
 });
+SearchFilterBar.displayName = "SearchFilterBar";
 
 export default SearchFilterBar;
 
