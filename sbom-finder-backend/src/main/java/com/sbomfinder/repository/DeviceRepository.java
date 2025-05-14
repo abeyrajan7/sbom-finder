@@ -13,11 +13,11 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     //for fuzzy search
     @Query(value = "SELECT * FROM devices d WHERE " +
             "(:query IS NULL OR :query = '' OR " +
+            "(" +
+            "(position(' ' in :query) = 0 AND REPLACE(LOWER(d.device_name), ' ', '') ILIKE CONCAT('%', LOWER(:query), '%')) OR " +
             "to_tsvector('english', d.device_name) @@ plainto_tsquery(:query) OR " +
-            "similarity(d.device_name, :query) > 0.4 OR " +
-            "similarity(d.manufacturer, :query) > 0.4 OR " +
-            "similarity(d.operating_system, :query) > 0.4 OR " +
-            "similarity(d.kernel_version, :query) > 0.4) AND " +
+            "similarity(d.device_name, :query) > 0.4" +
+            ")) AND " +
             "(:manufacturer IS NULL OR :manufacturer = '' OR d.manufacturer ILIKE :manufacturer) AND " +
             "(:operatingSystem IS NULL OR :operatingSystem = '' OR d.operating_system ILIKE :operatingSystem) AND " +
             "(:category IS NULL OR :category = '' OR d.category ILIKE :category) " +
