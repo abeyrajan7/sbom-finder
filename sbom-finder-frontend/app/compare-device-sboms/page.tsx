@@ -223,7 +223,7 @@ export default function CompareSbomsPage() {
                                 )}
 
                                 {/* Vulnerabilities toggle */}
-                                {pkg.vulnerabilities?.length > 0 && (
+                                {Array.isArray(pkg.vulnerabilities) && pkg.vulnerabilities.length > 0 && (
                                   <>
                                     <button
                                       className="vuln-toggle-button"
