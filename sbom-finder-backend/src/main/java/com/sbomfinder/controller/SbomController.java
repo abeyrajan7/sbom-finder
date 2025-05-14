@@ -66,7 +66,7 @@ public class SbomController {
 
     @Autowired
     private SupplierRepository supplierRepository;
-
+    // api to upload the source code of the device
     @PostMapping("/upload-source")
     public ResponseEntity<?> uploadSourceZip(@RequestParam("file") MultipartFile file,
                                              @RequestParam("category") String category,
@@ -131,6 +131,7 @@ public class SbomController {
         }
     }
 
+    //delete a device from the list
     @Transactional
     @DeleteMapping("/{deviceId}")
     public ResponseEntity<String> deleteDevice(@PathVariable Long deviceId) {

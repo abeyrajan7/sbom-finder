@@ -31,6 +31,7 @@ public class SbomAnalyticsController {
     @Autowired
     private SupplierRepository supplierRepository;
 
+    // all operating systems
     @GetMapping("/operating-systems")
     public ResponseEntity<List<Map<String, Object>>> getOperatingSystems() {
         List<Device> devices = deviceRepository.findAll();
@@ -52,6 +53,7 @@ public class SbomAnalyticsController {
         return ResponseEntity.ok(response);
     }
 
+    // all manufacturers
     @GetMapping("/manufacturers")
     public ResponseEntity<List<Map<String, Object>>> getManufacturers() {
         List<Device> devices = deviceRepository.findAll();
@@ -73,6 +75,7 @@ public class SbomAnalyticsController {
         return ResponseEntity.ok(response);
     }
 
+    // all vulnerabilities by category
     @GetMapping("/vulnerabilities-by-category")
     public ResponseEntity<List<Map<String, Object>>> getVulnerabilitiesByCategory() {
         List<Device> devices = deviceRepository.findAll();
@@ -100,6 +103,7 @@ public class SbomAnalyticsController {
         return ResponseEntity.ok(response);
     }
 
+    // get to vulnerable packages
     @GetMapping("/top-vulnerable-packages")
     public ResponseEntity<List<Map<String, Object>>> getTopVulnerablePackages() {
         List<SoftwarePackage> packages = softwarePackageRepository.findAll();
@@ -124,6 +128,7 @@ public class SbomAnalyticsController {
         return ResponseEntity.ok(response);
     }
 
+    // get all vulnerabilities based on its severity
     @GetMapping("/vulnerability-severity")
     public ResponseEntity<List<Map<String, Object>>> getVulnerabilitySeverity() {
         List<Vulnerability> vulnerabilities = vulnerabilityRepository.findAll();
@@ -145,6 +150,7 @@ public class SbomAnalyticsController {
         return ResponseEntity.ok(response);
     }
 
+    // get all the most vulnerable suppliers
     @GetMapping("/vulnerable-suppliers")
     public ResponseEntity<List<Map<String, Object>>> getVulnerableSuppliers() {
         List<SoftwarePackage> packages = softwarePackageRepository.findAll();
@@ -176,6 +182,7 @@ public class SbomAnalyticsController {
     }
 
 
+    // get the categories of devces uploaded
     @GetMapping("/category")
     public List<Map<String, Object>> getFixedCategoriesAnalytics() {
         List<Map<String, Object>> response = new ArrayList<>();
@@ -200,6 +207,8 @@ public class SbomAnalyticsController {
         return response;
     }
 
+
+    //get all teh suppliers of teh packages
     @GetMapping("/suppliers")
     public ResponseEntity<List<Map<String, Object>>> getSupplierStatistics() {
         List<Supplier> suppliers = supplierRepository.findAll();

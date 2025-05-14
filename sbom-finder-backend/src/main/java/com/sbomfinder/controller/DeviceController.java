@@ -278,7 +278,7 @@ public class DeviceController {
         return ResponseEntity.ok(comparisonDTO);
     }
 
-    //device id and name
+    //List all details
     @GetMapping ("/list")
     public ResponseEntity<List<Map<String, Object>>> listAllDevices() {
             List<Device> devices = deviceRepository.findAll();
@@ -360,7 +360,7 @@ public class DeviceController {
 
 
 
-//    //download the sbom of device
+// download the sbom of device
 @GetMapping("/download/{deviceId}")
 public ResponseEntity<Resource> downloadArchivedSbom(
         @PathVariable Long deviceId,
@@ -403,6 +403,7 @@ public ResponseEntity<Resource> downloadArchivedSbom(
     }
 }
 
+    // get all the archived SBOMs
     @GetMapping("/archives/all")
     public ResponseEntity<?> getAllDeviceArchives() {
         List<Device> allDevices = deviceRepository.findAll();
@@ -431,6 +432,7 @@ public ResponseEntity<Resource> downloadArchivedSbom(
         return ResponseEntity.ok(deviceArchiveList);
     }
 
+    //Download from the archoved sboms
     @GetMapping("/download/archive/{archiveId}")
     public ResponseEntity<Resource> downloadArchivedSbomById(
             @PathVariable Long archiveId,
@@ -473,6 +475,7 @@ public ResponseEntity<Resource> downloadArchivedSbom(
         }
     }
 
+    // download the latest version's sbom
     @GetMapping("/download/{deviceId}/latest")
     public ResponseEntity<Resource> downloadLatestSbom(
             @PathVariable Long deviceId,
@@ -512,4 +515,3 @@ public ResponseEntity<Resource> downloadArchivedSbom(
         }
     }
 }
-//background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);
