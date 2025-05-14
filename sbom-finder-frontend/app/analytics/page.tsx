@@ -7,7 +7,28 @@ import {
 } from "recharts";
 import "./analytics.css";
 
-// Tooltip component to show detailed info for suppliers
+/* === Type Definitions === */
+type AnalyticsTab = "category" | "operatingSystem" | "supplier" | "manufacturer" | "vulnerabilities";
+
+type BasicSbomCount = { name: string; sboms: number };
+type SupplierData = {
+  supplier: string;
+  packageCount: number;
+  packages: { name: string; version: string }[];
+};
+type VulnerabilityStat = { name: string; value: number };
+type TopVulnerablePackage = { name: string; vulns: number };
+type VulnerableSupplier = { name: string; vulns: number };
+
+type AnalyticsDataMap = {
+  category: BasicSbomCount[];
+  operatingSystem: BasicSbomCount[];
+  manufacturer: BasicSbomCount[];
+  supplier: SupplierData[];
+  vulnerabilities: never[];
+};
+
+/* === Tooltip for Supplier Chart === */
 const SupplierTooltip = ({
   active,
   payload,
@@ -33,68 +54,55 @@ const SupplierTooltip = ({
   return null;
 };
 
-// Type definitions
-type AnalyticsTab = "category" | "operatingSystem" | "supplier" | "manufacturer" | "vulnerabilities";
-
-type SupplierData = {
-  supplier: string;
-  packageCount: number;
-  packages: { name: string; version: string }[];
-};
-
-type VulnerableSupplier = {
-  name: string;
-  vulns: number;
-};
-
 export default function AnalyticsPage() {
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
-  // UI state management
   const [selected, setSelected] = useState<AnalyticsTab>("category");
-  const [analyticsData, setAnalyticsData] = useState<Record<AnalyticsTab, unknown[]>>({
+
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsDataMap>({
     category: [],
     operatingSystem: [],
-    supplier: [],
     manufacturer: [],
+    supplier: [],
     vulnerabilities: [],
   });
 
-  // Chart-specific states
-  const [vulnerabilityCategoryData, setVulnerabilityCategoryData] = useState([]);
-  const [severityData, setSeverityData] = useState([]);
-  const [topVulnerablePackages, setTopVulnerablePackages] = useState([]);
+  const [vulnerabilityCategoryData, setVulnerabilityCategoryData] = useState<VulnerabilityStat[]>([]);
+  const [severityData, setSeverityData] = useState<VulnerabilityStat[]>([]);
+  const [topVulnerablePackages, setTopVulnerablePackages] = useState<TopVulnerablePackage[]>([]);
   const [vulnerableSuppliers, setVulnerableSuppliers] = useState<VulnerableSupplier[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch data on page load
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const endpoints = [
-          "category", "operating-systems", "suppliers", "manufacturers",
-          "vulnerabilities-by-category", "top-vulnerable-packages",
-          "vulnerability-severity", "vulnerable-suppliers"
-        ];
-
-        const responses = await Promise.all(
-          endpoints.map(endpoint => fetch(`${BASE_URL}/api/analytics/${endpoint}`))
-        );
-
         const [
-          category, operatingSystem, supplier, manufacturer,
-          vulnCategory, topPackages, severity, vulnSuppliers
-        ] = await Promise.all(responses.map(res => res.json()));
+          categoryRes, osRes, supplierRes, manufacturerRes,
+          vulnCategoryRes, topPackagesRes, severityRes, vulnSuppliersRes
+        ] = await Promise.all([
+          fetch(`${BASE_URL}/api/analytics/category`),
+          fetch(`${BASE_URL}/api/analytics/operating-systems`),
+          fetch(`${BASE_URL}/api/analytics/suppliers`),
+          fetch(`${BASE_URL}/api/analytics/manufacturers`),
+          fetch(`${BASE_URL}/api/analytics/vulnerabilities-by-category`),
+          fetch(`${BASE_URL}/api/analytics/top-vulnerable-packages`),
+          fetch(`${BASE_URL}/api/analytics/vulnerability-severity`),
+          fetch(`${BASE_URL}/api/analytics/vulnerable-suppliers`)
+        ]);
+
+        const category = await categoryRes.json() as BasicSbomCount[];
+        const operatingSystem = await osRes.json() as BasicSbomCount[];
+        const supplier = await supplierRes.json() as SupplierData[];
+        const manufacturer = await manufacturerRes.json() as BasicSbomCount[];
+        const vulnCategory = await vulnCategoryRes.json() as VulnerabilityStat[];
+        const topPackages = await topPackagesRes.json() as TopVulnerablePackage[];
+        const severity = await severityRes.json() as VulnerabilityStat[];
+        const vulnSuppliers = await vulnSuppliersRes.json() as VulnerableSupplier[];
 
         setAnalyticsData({
           category,
           operatingSystem,
-          supplier: supplier.map((s: SupplierData) => ({
-            name: s.supplier,
-            packageCount: s.packageCount,
-            packages: s.packages,
-          })),
           manufacturer,
+          supplier,
           vulnerabilities: [],
         });
 
@@ -103,14 +111,14 @@ export default function AnalyticsPage() {
         setSeverityData(severity);
         setVulnerableSuppliers(vulnSuppliers.filter(s => s.vulns > 0));
       } catch (error) {
-        console.error("Error fetching analytics data:", error);
+        console.error("Error loading analytics:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [BASE_URL]);
 
   if (loading) {
     return (
@@ -125,7 +133,6 @@ export default function AnalyticsPage() {
     <div className="analytics-container">
       <h1 className="analytics-page-title">SBOM Analytics</h1>
 
-      {/* Tab buttons */}
       <div className="analytics-tabs">
         {["category", "operatingSystem", "supplier", "manufacturer", "vulnerabilities"].map(tab => (
           <button
@@ -138,32 +145,37 @@ export default function AnalyticsPage() {
         ))}
       </div>
 
-      {/* Dynamic chart rendering based on selected tab */}
-      {selected === "supplier" ? (
+      {/* === Supplier Tab === */}
+      {selected === "supplier" && (
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={analyticsData.supplier}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" angle={-45} textAnchor="end" />
-            <YAxis allowDecimals={false} />
+            <XAxis dataKey="supplier" angle={-45} textAnchor="end" />
+            <YAxis />
             <Tooltip content={<SupplierTooltip />} />
             <Legend />
-            <Bar dataKey="packageCount" fill="#8884d8" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="packageCount" fill="#8884d8" />
           </BarChart>
         </ResponsiveContainer>
-      ) : selected !== "vulnerabilities" ? (
+      )}
+
+      {/* === Category, OS, Manufacturer Tabs === */}
+      {["category", "operatingSystem", "manufacturer"].includes(selected) && (
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={analyticsData[selected]}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
+            <YAxis />
             <Tooltip />
             <Legend />
             <Bar dataKey="sboms" fill="#8884d8" />
           </BarChart>
         </ResponsiveContainer>
-      ) : (
+      )}
+
+      {/* === Vulnerabilities Tab === */}
+      {selected === "vulnerabilities" && (
         <div className="vulnerability-analytics">
-          {/* Vulnerability Category Pie Chart */}
           <h2>Most Vulnerable Category</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -177,7 +189,6 @@ export default function AnalyticsPage() {
             </PieChart>
           </ResponsiveContainer>
 
-          {/* Top Vulnerable Packages */}
           <h2>Top 10 Vulnerable Packages</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topVulnerablePackages}>
@@ -190,7 +201,6 @@ export default function AnalyticsPage() {
             </BarChart>
           </ResponsiveContainer>
 
-          {/* Affected Suppliers */}
           <h2>Affected Suppliers</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={vulnerableSuppliers}>
@@ -203,7 +213,6 @@ export default function AnalyticsPage() {
             </BarChart>
           </ResponsiveContainer>
 
-          {/* Severity Breakdown */}
           <h2>Severity Breakdown</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={severityData}>
