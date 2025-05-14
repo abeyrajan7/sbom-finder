@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
 
   // UI state management
   const [selected, setSelected] = useState<AnalyticsTab>("category");
-  const [analyticsData, setAnalyticsData] = useState<Record<AnalyticsTab, any[]>>({
+  const [analyticsData, setAnalyticsData] = useState<Record<AnalyticsTab, unknown[]>>({
     category: [],
     operatingSystem: [],
     supplier: [],
