@@ -1,3 +1,4 @@
+/* Container for the entire SBOM archive section */
 .sbom-archive-container {
   padding: 2rem;
   font-family: 'Segoe UI', sans-serif;
@@ -5,6 +6,7 @@
   min-height: 100vh;
 }
 
+/* Page title styling */
 h2 {
   margin-bottom: 2rem;
   font-size: 2rem;
@@ -13,6 +15,7 @@ h2 {
   color: #bcc4d7;
 }
 
+/* Main archive table layout */
 .archive-table {
   display: flex;
   flex-direction: column;
@@ -23,7 +26,7 @@ h2 {
   padding: 2rem;
 }
 
-/* Each row contains device name and versions */
+/* Individual device archive row */
 .archive-row {
   display: flex;
   justify-content: space-between;
@@ -34,6 +37,7 @@ h2 {
   gap: 1rem;
 }
 
+/* Device name styling */
 .device-name {
   font-weight: 600;
   font-size: 1.1rem;
@@ -42,6 +46,7 @@ h2 {
   min-width: 200px;
 }
 
+/* Container for version tags/links */
 .device-versions {
   flex: 3;
   display: flex;
@@ -49,6 +54,7 @@ h2 {
   gap: 10px;
 }
 
+/* Individual version tag/button */
 .version-link {
   background-color: #e0f2fe;
   color: #0369a1;
@@ -60,12 +66,13 @@ h2 {
   transition: background-color 0.2s, color 0.2s;
 }
 
+/* Hover effect for version buttons */
 .version-link:hover {
   background-color: #0369a1;
   color: #ffffff;
 }
 
-/* Modal Dialog */
+/* Full-screen overlay for download dialog */
 .download-dialog {
   position: fixed;
   top: 0;
@@ -79,6 +86,7 @@ h2 {
   z-index: 1000;
 }
 
+/* Dialog box styling */
 .dialog-box {
   background-color: white;
   padding: 1.5rem 2rem;
@@ -88,11 +96,13 @@ h2 {
   width: 300px;
 }
 
+/* Dialog text */
 .dialog-box p {
   margin-bottom: 1rem;
   font-weight: 500;
 }
 
+/* Download format buttons */
 .dialog-box button {
   margin: 0.3rem 0.5rem;
   padding: 0.5rem 1.4rem;
@@ -105,15 +115,54 @@ h2 {
   transition: background-color 0.3s;
 }
 
+/* Hover effect for primary buttons */
 .dialog-box button:hover {
   background-color: #1e3a8a;
 }
 
+/* Cancel button style override */
 .cancel-button {
   background-color: #e5e7eb;
   color: #1f2937;
 }
 
+/* Hover effect for cancel button */
 .cancel-button:hover {
   background-color: #d1d5db;
+}
+
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .sbom-archive-container {
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .archive-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .device-name {
+    font-size: 1rem;
+  }
+
+  .version-link {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.9rem;
+  }
+
+  .dialog-box {
+    width: 90%;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .dialog-box button {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
 }

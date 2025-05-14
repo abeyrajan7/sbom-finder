@@ -11,7 +11,6 @@
   background-color: #f9f9f9;
   border: 1px solid #4b5563;
   border-radius: 8px;
-  /* padding: 1rem; */
   margin-bottom: 1.5rem;
   transition: background-color 0.2s ease;
 }
@@ -29,8 +28,7 @@
 .package-grid,
 .vulnerability-grid,
 .reference-grid,
-.supplier-grid
- {
+.supplier-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
@@ -73,7 +71,7 @@
 }
 
 .section-header {
-  background-color: #006d77; /* Deep teal */
+  background-color: #006d77;
   color: #ffffff;
   font-weight: 600;
   font-size: 1.05rem;
@@ -82,7 +80,6 @@
   align-items: center;
   padding: 12px 16px;
   border-radius: 6px;
-  /* margin-bottom: 0.5rem; */
 }
 
 .device-section > :not(.section-header) {
@@ -162,4 +159,40 @@
   font-weight: 500;
   display: inline-block;
   white-space: nowrap;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+  .device-details-container {
+    padding: 16px;
+  }
+
+  .section-header {
+    font-size: 1rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 1rem;
+  }
+
+  .device-section > :not(.section-header) {
+    padding: 12px;
+  }
+
+  .package-grid,
+  .vulnerability-grid,
+  .reference-grid,
+  .supplier-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .back-button {
+    left: 6vw;
+    top: 2vh;
+    font-size: 13px;
+    padding: 6px 10px;
+  }
 }

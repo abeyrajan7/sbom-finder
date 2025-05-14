@@ -5,8 +5,8 @@ import "./upload.css";
 import { useRouter } from "next/navigation";
 
 export default function UploadSBOMPage() {
-  const BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
   const [file, setFile] = useState<File | null>(null);
   const [manufacturer, setManufacturer] = useState("");
   const [category, setCategory] = useState("");
@@ -17,25 +17,27 @@ export default function UploadSBOMPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
+  // Prevent accidental tab close during upload
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     event.preventDefault();
-    event.returnValue =
-      "Upload is in progress. Are you sure you want to leave?";
+    event.returnValue = "Upload is in progress. Are you sure you want to leave?";
   };
 
+  // Handles file + metadata upload
   const handleUpload = async () => {
     setShowOverlay(true);
     window.addEventListener("beforeunload", handleBeforeUnload);
     setError(null);
 
+    // Validations
     if (!file) {
       setError("Please select a file to upload.");
       return;
     }
-
     if (!category || !deviceName) {
       setError("Please fill all required fields.");
       return;
@@ -43,6 +45,7 @@ export default function UploadSBOMPage() {
 
     setLoading(true);
 
+    // Prepare form data
     const formData = new FormData();
     formData.append("file", file);
     formData.append("category", category);
@@ -96,14 +99,11 @@ export default function UploadSBOMPage() {
         <input
           type="file"
           ref={fileInputRef}
-          style={{ display: "block" }}
           accept=".zip,.tar,.tar.gz,.tgz"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
           className="text-input"
         />
-        <p style={{ fontSize: "0.8rem", color: "gray" }}>
-          Accepted formats: .zip, .tar, .tar.gz, .tgz
-        </p>
+        <p className="upload-hint">Accepted formats: .zip, .tar, .tar.gz, .tgz</p>
 
         {/* Form Fields */}
         <select
@@ -111,9 +111,7 @@ export default function UploadSBOMPage() {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
-          <option value="" disabled hidden>
-            Select Category
-          </option>
+          <option value="" disabled hidden>Select Category</option>
           <option value="Fitness Wearables">Fitness Wearables</option>
           <option value="Smart Home">Smart Home</option>
         </select>
@@ -142,6 +140,7 @@ export default function UploadSBOMPage() {
           value={operatingSystem}
           onChange={(e) => setOperatingSystem(e.target.value)}
         />
+
         <input
           type="text"
           placeholder="OS Version"
@@ -149,6 +148,7 @@ export default function UploadSBOMPage() {
           value={osVersion}
           onChange={(e) => setOsVersion(e.target.value)}
         />
+
         <input
           type="text"
           placeholder="Kernel Version"
@@ -157,6 +157,7 @@ export default function UploadSBOMPage() {
           onChange={(e) => setKernelVersion(e.target.value)}
         />
 
+        {/* Upload Button */}
         <button
           className="upload-button"
           onClick={handleUpload}
@@ -165,17 +166,17 @@ export default function UploadSBOMPage() {
           {loading ? "Uploading..." : "Upload"}
         </button>
 
+        {/* Upload Progress Overlay */}
         {showOverlay && (
           <div className="upload-overlay">
             <div className="upload-overlay-content">
               <h3>Uploading...</h3>
-              <p>
-                Please do not close or switch tabs. This may take a few minutes.
-              </p>
+              <p>Please do not close or switch tabs. This may take a few minutes.</p>
             </div>
           </div>
         )}
 
+        {/* Error Message */}
         {error && <p className="error-message">{error}</p>}
       </div>
     </div>

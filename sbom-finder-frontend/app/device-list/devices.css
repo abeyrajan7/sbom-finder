@@ -74,12 +74,19 @@ h2 {
   background-color: #e2e8f0;
 }
 
-/* Buttons */
+/* Empty table state */
+.empty-table-message {
+  text-align: center;
+  padding: 1rem;
+  color: gray;
+}
+
+/* Action buttons */
 .action-buttons {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  align-items: stretch;  /* Makes buttons take full available width */
+  align-items: stretch;
   width: 100%;
 }
 
@@ -90,9 +97,9 @@ h2 {
   border-radius: 6px;
   font-size: 0.9rem;
   cursor: pointer;
-  width: 100%;  /* Make it responsive */
-  max-width: 150px;  /* Optional: limit on large screens */
-  margin: 0 auto; /* center inside cell */
+  width: 100%;
+  max-width: 150px;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
@@ -114,7 +121,30 @@ h2 {
   background-color: #991b1b;
 }
 
+/* View button */
+.view-btn {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
 
+.view-btn:hover {
+  background-color: #4b5563;
+}
+
+.footprint-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* Download dialog */
 .download-dialog {
   position: fixed;
   top: 0;
@@ -133,7 +163,7 @@ h2 {
   padding: 2rem;
   border-radius: 8px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .dialog-box button {
@@ -153,6 +183,7 @@ h2 {
   background: #d1d5db;
 }
 
+/* Modal footprint viewer */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -199,51 +230,7 @@ h2 {
   cursor: pointer;
 }
 
-.view-btn {
-  background-color: #6b7280; /* Cool Gray */
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  font-size: 0.9rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.view-btn:hover {
-  background-color: #4b5563; /* Darker Gray */
-}
-
-.footprint-btn-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-
-
-/* Dropdown
-.download-dropdown {
-  margin-top: 0.25rem;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 0.5rem;
-  width: 140px;
-}
-
-.download-dropdown a {
-  display: block;
-  padding: 4px 0;
-  color: #333;
-  text-decoration: none;
-}
-
-.download-dropdown a:hover {
-  background: #f1f1f1;
-} */
-
-/* Overlay */
+/* Upload overlay */
 .upload-overlay {
   position: fixed;
   top: 0;
@@ -267,7 +254,7 @@ h2 {
   border-radius: 8px;
 }
 
-/* Responsive Tweaks */
+/* Responsive Styles */
 @media (max-width: 768px) {
   .devices-container {
     width: 100%;
@@ -290,7 +277,11 @@ h2 {
     justify-content: center;
   }
 
-  .download-dropdown {
-    width: 100%;
+  .dialog-box button {
+    font-size: 0.9rem;
+  }
+
+  .footprint-content {
+    font-size: 0.8rem;
   }
 }

@@ -1,8 +1,7 @@
-/* Updated visually appealing styles for Compare SBOM page */
 .compare-container {
   max-width: 1000px;
-  margin: 0rem auto;
-  padding: 1rem 2rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
   font-family: "Segoe UI", sans-serif;
   background-color: #003a3d;
   color: #f1f5f9;
@@ -21,7 +20,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 2rem;
+  gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -29,6 +28,7 @@
   display: flex;
   flex-direction: column;
   min-width: 250px;
+  flex: 1 1 45%;
 }
 
 .select-box label {
@@ -46,26 +46,55 @@
   color: #111827;
 }
 
-.compare-button {
-  margin: 1.5rem auto;
-  display: block;
-  padding: 0.6rem 1.5rem;
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.compare-button,
+.reset-button {
   font-size: 1rem;
-  background-color: #2563eb;
-  color: white;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  min-width: 140px;
+}
+
+.compare-button {
+  background-color: #2563eb;
+  color: white;
 }
 
 .compare-button:hover {
   background-color: #1e40af;
 }
 
+.reset-button {
+  background-color: #6b7280;
+  color: white;
+}
+
+.reset-button:hover {
+  background-color: #4b5563;
+}
+
+.compare-table-scroll-wrapper {
+  max-height: 70vh;
+  overflow-x: auto;
+  margin-top: 1rem;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  background: #ffffff;
+}
+
 .comparison-table {
   width: 100%;
-  table-layout: fixed; /* Ensures equal column widths */
+  table-layout: fixed;
   border-collapse: collapse;
   background-color: #f9fafb;
   color: #1f2937;
@@ -89,10 +118,37 @@
   background-color: #fefefe;
 }
 
+.comparison-table td:nth-child(2),
+.comparison-table td:nth-child(3) {
+  width: 45%;
+}
+
 .package-entry {
   margin-bottom: 0.8rem;
   font-weight: 500;
   line-height: 1.4;
+}
+
+.package-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+  word-break: break-word;
+}
+
+.pkg-name {
+  flex: 1;
+  font-weight: 600;
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+
+.pkg-version {
+  font-size: 0.85rem;
+  color: #555;
+  white-space: nowrap;
 }
 
 .vuln-toggle-button {
@@ -104,6 +160,10 @@
   background-color: #ef4444;
   color: white;
   cursor: pointer;
+}
+
+.supplier-btn {
+  background-color: #3b82f6;
 }
 
 .vuln-tags {
@@ -122,97 +182,39 @@
 }
 
 .vuln-tag.Critical { background-color: #b91c1c; }
-.vuln-tag.High { background-color: #ef4444; }
-.vuln-tag.Medium { background-color: #f97316; }
-.vuln-tag.Low { background-color: #eab308; color: #000; }
-.vuln-tag.None { background-color: #10b981; }
-.vuln-tag.Unknown { background-color: #9ca3af; }
+.vuln-tag.High     { background-color: #ef4444; }
+.vuln-tag.Medium   { background-color: #f97316; }
+.vuln-tag.Low      { background-color: #eab308; color: #000; }
+.vuln-tag.None     { background-color: #10b981; }
+.vuln-tag.Unknown  { background-color: #9ca3af; }
 
-.compare-table-scroll-wrapper {
-  max-height: 68vh;
-  overflow-y: auto;
-  margin-top: 1rem;
-  border: 1px solid #334155;
-  border-radius: 0.75rem;
-  background: #ffffff;
+/* Responsive styles */
+@media (max-width: 768px) {
+  .compare-title {
+    font-size: 1.5rem;
+  }
+
+  .comparison-table th,
+  .comparison-table td {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .select-box {
+    flex: 1 1 100%;
+  }
+
+  .package-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .vuln-toggle-button {
+    width: 100%;
+  }
+
+  .compare-button,
+  .reset-button {
+    width: 100%;
+  }
 }
-
-/* Restrict package column widths */
-.comparison-table td:nth-child(2),
-.comparison-table td:nth-child(3) {
-  width: 45%;
-  vertical-align: top;
-}
-
-/* Style for package item */
-.package-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0.5rem;
-  gap: 1rem;
-  word-break: break-word;
-}
-
-.pkg-name {
-  flex: 1;
-  font-weight: 600;
-  color: #111827;
-  overflow-wrap: anywhere;
-}
-
-/* Style for version text */
-.pkg-version {
-  font-size: 0.85rem;
-  color: #555;
-  margin: 0;
-  white-space: nowrap;
-}
-
-.button-group {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-}
-
-.compare-button,
-.reset-button {
-  font-size: 1rem;
-  padding: 0.75rem 2rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  min-width: 140px;
-  text-align: center;
-  margin: 0;
-  display: inline-block;
-}
-
-.compare-button {
-  background-color: #2563eb;
-  color: white;
-}
-
-.compare-button:hover {
-  background-color: #1e40af;
-}
-
-.reset-button {
-  background-color: #6b7280;
-  color: white;
-}
-
-.reset-button:hover {
-  background-color: #4b5563;
-}
-
-.supplier-btn {
-    background: blue;
-}
-
-

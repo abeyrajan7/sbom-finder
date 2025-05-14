@@ -1,4 +1,3 @@
-// devucesPage
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
@@ -22,13 +21,13 @@ interface Device {
 }
 
 export default function DevicesPage() {
-  //   const BASE_URL = 'https://sbom-finder-backend.onrender.com';
   const BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-  // const [devices, setDevices] = useState<Device[]>([]);
+
   const searchFilterRef = useRef<SearchFilterBarRef>(null);
   const pathname = usePathname();
   const { devices, setDevices } = useDeviceStore();
+
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayMessage, setOverlayMessage] = useState("Processing...");
   const [selectedDownloadId, setSelectedDownloadId] = useState<number | null>(
@@ -43,13 +42,15 @@ export default function DevicesPage() {
     content: "",
   });
 
+  // Re-fetch data and reset filters when navigating back
   useEffect(() => {
     if (pathname === "/device-list") {
-      fetchDevices(); // Reset device list
-      searchFilterRef.current?.resetFilters(); // Clear filter inputs
+      fetchDevices();
+      searchFilterRef.current?.resetFilters();
     }
   }, [pathname]);
 
+  // Initial data fetch or when redirected with highlight param
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const highlight = params.get("highlight");
@@ -67,17 +68,13 @@ export default function DevicesPage() {
     }
   }, []);
 
-
-
-
-
+  // Filtered search
   const handleSearch = async (params: {
     query?: string;
     manufacturer?: string;
     operatingSystem?: string;
   }) => {
-    const { query = "", manufacturer = "", operatingSystem = "" } = params; // destructure here
-
+    const { query = "", manufacturer = "", operatingSystem = "" } = params;
     const res = await fetch(
       `${BASE_URL}/api/devices/search?query=${query}&manufacturer=${manufacturer}&operatingSystem=${operatingSystem}`
     );
@@ -85,6 +82,7 @@ export default function DevicesPage() {
     setDevices(data);
   };
 
+  // Full list fetch
   const fetchDevices = async () => {
     try {
       const res = await fetch(`${BASE_URL}/api/devices/all`);
@@ -95,6 +93,7 @@ export default function DevicesPage() {
     }
   };
 
+  // Delete a device
   const handleDelete = async (deviceId: number) => {
     if (confirm("Are you sure you want to delete this SBOM?")) {
       try {
@@ -102,15 +101,13 @@ export default function DevicesPage() {
           "Deletion in progress... Please do not close or switch tabs. This may take a few moments."
         );
         setShowOverlay(true);
+
         const response = await fetch(`${BASE_URL}/api/sboms/${deviceId}`, {
           method: "DELETE",
         });
 
         if (response.ok) {
-          const updatedDevices = devices.filter(
-            (d: Device) => d.deviceId !== deviceId
-          );
-          setDevices(updatedDevices);
+          setDevices(devices.filter((d) => d.deviceId !== deviceId));
         } else {
           alert("Failed to delete SBOM.");
         }
@@ -125,7 +122,12 @@ export default function DevicesPage() {
 
   return (
     <div className="devices-container">
-      <SearchFilterBar ref={searchFilterRef} onSearch={handleSearch} onReset={fetchDevices} />
+      <SearchFilterBar
+        ref={searchFilterRef}
+        onSearch={handleSearch}
+        onReset={fetchDevices}
+      />
+
       <div className="table-scroll-wrapper">
         <table className="devices-table">
           <thead>
@@ -143,19 +145,12 @@ export default function DevicesPage() {
           <tbody>
             {devices.length === 0 ? (
               <tr>
-                <td
-                  colSpan={8}
-                  style={{
-                    textAlign: "center",
-                    padding: "1rem",
-                    color: "gray",
-                  }}
-                >
+                <td colSpan={8} className="empty-table-message">
                   No SBOM files found.
                 </td>
               </tr>
             ) : (
-              devices.map((device: Device, index: number) => (
+              devices.map((device, index) => (
                 <tr key={index}>
                   <td>
                     <Link
@@ -174,19 +169,17 @@ export default function DevicesPage() {
                   <td>{device.osVersion}</td>
                   <td>{device.kernelVersion}</td>
                   <td>
-                    <div className="footprint-btn-container">
-                      <button
-                        className="view-btn"
-                        onClick={() =>
-                          setFootprintModal({
-                            open: true,
-                            content: device.digitalFootprint,
-                          })
-                        }
-                      >
-                        View
-                      </button>
-                    </div>
+                    <button
+                      className="view-btn"
+                      onClick={() =>
+                        setFootprintModal({
+                          open: true,
+                          content: device.digitalFootprint,
+                        })
+                      }
+                    >
+                      View
+                    </button>
                   </td>
                   <td>
                     <div className="action-buttons">
@@ -196,13 +189,12 @@ export default function DevicesPage() {
                       >
                         Delete
                       </button>
-
                       <button
+                        className="download-btn"
                         onClick={() => {
                           setSelectedDownloadId(device.deviceId);
                           setShowDownloadDialog(true);
                         }}
-                        className="download-btn"
                       >
                         Download SBOM
                       </button>
@@ -215,6 +207,7 @@ export default function DevicesPage() {
         </table>
       </div>
 
+      {/* Download format dialog */}
       {showDownloadDialog && selectedDownloadId && (
         <div className="download-dialog">
           <div className="dialog-box">
@@ -253,6 +246,7 @@ export default function DevicesPage() {
         </div>
       )}
 
+      {/* Processing overlay */}
       {showOverlay && (
         <div className="upload-overlay">
           <div className="upload-overlay-content">
@@ -261,6 +255,7 @@ export default function DevicesPage() {
         </div>
       )}
 
+      {/* Digital footprint modal */}
       {footprintModal.open && (
         <div className="modal-overlay">
           <div className="modal-box">
@@ -277,5 +272,4 @@ export default function DevicesPage() {
       )}
     </div>
   );
-
 }

@@ -91,3 +91,28 @@
   padding: 2rem;
   border-radius: 8px;
 }
+
+/* Responsive Enhancements */
+@media (max-width: 600px) {
+  .upload-box {
+    padding: 1.5rem;
+  }
+
+  .upload-title {
+    font-size: 1.3rem;
+  }
+
+  .upload-button {
+    font-size: 0.95rem;
+  }
+
+  .text-input,
+  .dropdown {
+    font-size: 0.9rem;
+  }
+
+  .upload-overlay-content {
+    font-size: 1rem;
+    padding: 1.5rem;
+  }
+}

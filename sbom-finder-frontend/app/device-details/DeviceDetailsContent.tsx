@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./device-details.css";
 
+// Data structures
 interface SoftwarePackage {
   name: string;
   version: string;
@@ -42,9 +43,9 @@ export default function DeviceDetailsContent() {
   const device_id = searchParams.get("device_id");
   const [deviceDetails, setDeviceDetails] = useState<DeviceDetail | null>(null);
   const router = useRouter();
-//   const BASE_URL = "https://sbom-finder-backend.onrender.com";
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
+  // Manage visibility toggles for expandable sections
   const [openSections, setOpenSections] = useState({
     info: true,
     os: true,
@@ -61,6 +62,7 @@ export default function DeviceDetailsContent() {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Fetch device details by ID
   useEffect(() => {
     if (!device_id) return;
 
@@ -71,14 +73,21 @@ export default function DeviceDetailsContent() {
   }, [device_id]);
 
   if (!deviceDetails) return <div>Loading...</div>;
+
+  // Extract non-empty supplier names
   const suppliers = [
-    ...new Set(deviceDetails.softwarePackages
-      .map(pkg => pkg.supplierName)
-      .filter(name => !!name && name !== "Unknown" && name !== "Unknown Supplier"))
+    ...new Set(
+      deviceDetails.softwarePackages
+        .map((pkg) => pkg.supplierName)
+        .filter(
+          (name) => !!name && name !== "Unknown" && name !== "Unknown Supplier"
+        )
+    ),
   ];
+
   return (
     <>
-      {/* Back button */}
+      {/* Back navigation */}
       <section className="back-button-container">
         <button onClick={() => router.back()} className="back-button">
           ← Back
@@ -86,7 +95,7 @@ export default function DeviceDetailsContent() {
       </section>
 
       <div className="device-details-container">
-        {/* Section 1: Info */}
+        {/* Device Info */}
         <section className="device-section">
           <div className="section-header">
             <h2>Device Information</h2>
@@ -100,7 +109,7 @@ export default function DeviceDetailsContent() {
           )}
         </section>
 
-        {/* Section 2: OS */}
+        {/* Operating System */}
         <section className="device-section" onClick={() => toggleSection("os")}>
           <div className="section-header">
             <h2>Operating System</h2>
@@ -115,7 +124,7 @@ export default function DeviceDetailsContent() {
           )}
         </section>
 
-        {/* Section 3: Digital Footprint */}
+        {/* Digital Footprint */}
         <section className="device-section" onClick={() => toggleSection("footprint")}>
           <div className="section-header">
             <h2>Digital Footprint</h2>
@@ -124,14 +133,14 @@ export default function DeviceDetailsContent() {
           {openSections.footprint && <p>{deviceDetails.digitalFootprint}</p>}
         </section>
 
-        {/* Section 4: Software Packages */}
+        {/* Software Packages */}
         <section className="device-section device-packages" onClick={() => toggleSection("packages")}>
           <div className="section-header">
             <h2>Software Packages</h2>
             <button>{openSections.packages ? "−" : "+"}</button>
           </div>
           {openSections.packages && (
-              (deviceDetails.softwarePackages?.length ?? 0) > 0 ? (
+            (deviceDetails.softwarePackages?.length ?? 0) > 0 ? (
               <ul className="package-grid">
                 {deviceDetails.softwarePackages.map((pkg, idx) => (
                   <li key={idx}>
@@ -145,7 +154,7 @@ export default function DeviceDetailsContent() {
           )}
         </section>
 
-        {/* Section 5: Suppliers Involved */}
+        {/* Suppliers */}
         <section className="device-section" onClick={() => toggleSection("suppliers")}>
           <div className="section-header">
             <h2>Suppliers Involved</h2>
@@ -165,7 +174,8 @@ export default function DeviceDetailsContent() {
             )
           )}
         </section>
-        {/* Section 5: Vulnerabilities */}
+
+        {/* Vulnerabilities */}
         <section className="device-section" onClick={() => toggleSection("vulnerabilities")}>
           <div className="section-header">
             <h2>Vulnerabilities</h2>
@@ -180,7 +190,9 @@ export default function DeviceDetailsContent() {
                     <p>{vul.description}</p>
                     <p><strong>Severity:</strong> {vul.severityLevel}</p>
                     {vul.sourceUrl && (
-                      <a href={vul.sourceUrl} target="_blank" rel="noopener noreferrer">More Info</a>
+                      <a href={vul.sourceUrl} target="_blank" rel="noopener noreferrer">
+                        More Info
+                      </a>
                     )}
                   </div>
                 ))
@@ -191,25 +203,21 @@ export default function DeviceDetailsContent() {
           )}
         </section>
 
-        {/* Section 6: External References */}
+        {/* External References */}
         <section className="device-section" onClick={() => toggleSection("externalReferences")}>
           <div className="section-header">
             <h2>External References</h2>
             <button>{openSections.externalReferences ? "−" : "+"}</button>
           </div>
           {openSections.externalReferences && (
-              (deviceDetails.externalReferences?.length ?? 0) > 0 ? (
+            (deviceDetails.externalReferences?.length ?? 0) > 0 ? (
               <div className="reference-grid">
                 {deviceDetails.externalReferences.map((ref, idx) => (
                   <div className="reference-card" key={idx}>
                     <p><strong>Category:</strong> {ref.referenceCategory}</p>
                     <p><strong>Type:</strong> {ref.referenceType}</p>
                     {ref.referenceLocator.startsWith("http") ? (
-                      <p><strong>Link:</strong>
-                      <a href={ref.referenceLocator} target="_blank" rel="noopener noreferrer">
-                      {ref.referenceLocator.split("/").pop()}
-                      </a>
-                      </p>
+                      <p><strong>Link:</strong> <a href={ref.referenceLocator} target="_blank" rel="noopener noreferrer">{ref.referenceLocator.split("/").pop()}</a></p>
                     ) : (
                       <p><strong>Locator:</strong> {ref.referenceLocator}</p>
                     )}
