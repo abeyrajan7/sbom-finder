@@ -10,6 +10,7 @@ type Props = {
     query?: string;
     manufacturer?: string;
     operatingSystem?: string;
+    category?: string;
   }) => void;
   onReset: () => void;
 };
@@ -27,12 +28,15 @@ const SearchFilterBar = forwardRef<SearchFilterBarRef, Props>(({ onSearch, onRes
   const [operatingSystem, setOperatingSystem] = useState("");
   const [manufacturersList, setManufacturersList] = useState<string[]>([]);
   const [osList, setOsList] = useState<string[]>([]);
+  const [category, setCategory] = useState("");
+  const categoryList = ["Fitness Wearables", "Smart Home"];
 
   useImperativeHandle(ref, () => ({
     resetFilters() {
       setQuery("");
       setManufacturer("");
       setOperatingSystem("");
+      setCategory("");
     },
   }));
 
@@ -63,6 +67,7 @@ const SearchFilterBar = forwardRef<SearchFilterBarRef, Props>(({ onSearch, onRes
       query: query || "",
       manufacturer: manufacturer || "",
       operatingSystem: operatingSystem || "",
+      category: category || "",
     });
   };
 
@@ -70,7 +75,8 @@ const SearchFilterBar = forwardRef<SearchFilterBarRef, Props>(({ onSearch, onRes
     setQuery("");
     setManufacturer("");
     setOperatingSystem("");
-    onReset(); // Calls parent-provided function to reload all devices
+    setCategory("");
+    onReset();
   };
 
   return (
@@ -105,6 +111,19 @@ const SearchFilterBar = forwardRef<SearchFilterBarRef, Props>(({ onSearch, onRes
         {osList.map((os, index) => (
           <option key={index} value={os}>
             {os}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="search-select"
+      >
+        <option value="">All Categories</option>
+        {categoryList.map((cat, index) => (
+          <option key={index} value={cat}>
+            {cat}
           </option>
         ))}
       </select>

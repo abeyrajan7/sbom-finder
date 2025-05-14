@@ -73,13 +73,15 @@ export default function DevicesPage() {
     query?: string;
     manufacturer?: string;
     operatingSystem?: string;
+    category?: string;
   }) => {
-    const { query = "", manufacturer = "", operatingSystem = "" } = params;
+    const { query = "", manufacturer = "", operatingSystem = "", category = "" } = params;
     const res = await fetch(
-      `${BASE_URL}/api/devices/search?query=${query}&manufacturer=${manufacturer}&operatingSystem=${operatingSystem}`
+      `${BASE_URL}/api/devices/search?query=${query}&manufacturer=${manufacturer}&operatingSystem=${operatingSystem}&category=${category}`
     );
     const data = await res.json();
-    setDevices(data);
+    const sortedData = data.sort((a: Device, b: Device) => b.sbomId - a.sbomId);
+    setDevices(sortedData);
   };
 
   // Full list fetch
@@ -87,7 +89,8 @@ export default function DevicesPage() {
     try {
       const res = await fetch(`${BASE_URL}/api/devices/all`);
       const data = await res.json();
-      setDevices(data);
+      const sortedData = data.sort((a: Device, b: Device) => b.sbomId - a.sbomId);
+      setDevices(sortedData);
     } catch (err) {
       console.error("Error fetching devices:", err);
     }

@@ -297,9 +297,10 @@ public class DeviceController {
     public ResponseEntity<List<DeviceDetailsDTO>> searchDevices(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) String manufacturer,
-            @RequestParam(required = false) String operatingSystem) {
+            @RequestParam(required = false) String operatingSystem,
+            @RequestParam(required = false) String category) {
 
-        List<Device> devices = deviceRepository.searchWithFuzzyFilters(query, manufacturer, operatingSystem);
+        List<Device> devices = deviceRepository.searchWithFuzzyFilters(query, manufacturer, operatingSystem, category);
 
         List<DeviceDetailsDTO> deviceDetailsList = devices.stream().map(device -> {
             List<SoftwarePackageDTO> softwarePackageDTOs = softwarePackageRepository
